@@ -5,7 +5,7 @@ using ExtraObjectiveSetup.JSON;
 using GTFO.API;
 using HarmonyLib;
 
-namespace EOSExt.DimensionWarp
+namespace EOSExt.EnvTemperature
 {
     [BepInDependency("dev.gtfomodding.gtfo-api", BepInDependency.DependencyFlags.HardDependency)]
     [BepInDependency("GTFO.FloLib", BepInDependency.DependencyFlags.HardDependency)]
@@ -17,8 +17,8 @@ namespace EOSExt.DimensionWarp
     public class EntryPoint: BasePlugin
     {
         public const string AUTHOR = "Inas";
-        public const string PLUGIN_NAME = "EOSExt.DimensionWarp";
-        public const string VERSION = "1.0.1";
+        public const string PLUGIN_NAME = "EOSExt.EnvTemperature";
+        public const string VERSION = "1.0.0";
 
         private Harmony m_Harmony;
 
@@ -26,10 +26,10 @@ namespace EOSExt.DimensionWarp
         {
             SetupManagers();
 
-            m_Harmony = new Harmony("EOSExt.DimensionWarp");
+            m_Harmony = new Harmony("EOSExt.EnvTemperature");
             m_Harmony.PatchAll();
 
-            EOSLogger.Log("ExtraObjectiveSetup.DimensionWarp loaded.");
+            EOSLogger.Log("ExtraObjectiveSetup.EnvTemperature loaded.");
         }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace EOSExt.DimensionWarp
         /// </summary>
         private void SetupManagers()
         {
-            DimensionWarpManager.Current.Init();
+            TemperatureDefinitionManager.Current.Init();
         }
     }
 }
