@@ -5,12 +5,10 @@ using FloLib.Infos;
 using GameData;
 using GTFO.API;
 using Il2CppInterop.Runtime.Injection;
-using LevelGeneration;
 using Localization;
 using Player;
 using System;
 using TMPro;
-using Unity.Mathematics;
 using UnityEngine;
 
 namespace EOSExt.EnvTemperature.Components
@@ -60,16 +58,16 @@ namespace EOSExt.EnvTemperature.Components
 
         private void SetupGUI()
         {
-            if(m_TemperatureText != null)
+            if(m_TemperatureText == null)
             {
-                return;
+                m_TemperatureText = UnityEngine.Object.Instantiate<TextMeshPro>(GuiManager.PlayerLayer.m_objectiveTimer.m_titleText);
+                m_TemperatureText.transform.SetParent(GuiManager.PlayerLayer.m_playerStatus.gameObject.transform, false);
+                m_TemperatureText.GetComponent<RectTransform>().anchoredPosition = new Vector2(-5f, 8f);
+                m_TemperatureText.gameObject.transform.localPosition = new Vector3(268.2203f, 25.3799f, 0f);
+                m_TemperatureText.gameObject.transform.localScale = new Vector3(0.75f, 0.75f, 0.75f);
             }
 
-            m_TemperatureText = UnityEngine.Object.Instantiate<TextMeshPro>(GuiManager.PlayerLayer.m_objectiveTimer.m_titleText);
-            m_TemperatureText.transform.SetParent(GuiManager.PlayerLayer.m_playerStatus.gameObject.transform, false);
-            m_TemperatureText.GetComponent<RectTransform>().anchoredPosition = new Vector2(-5f, 8f);
-            m_TemperatureText.gameObject.transform.localPosition = new Vector3(268.2203f, 25.3799f, 0f);
-            m_TemperatureText.gameObject.transform.localScale = new Vector3(0.75f, 0.75f, 0.75f);
+            m_TemperatureText.gameObject.SetActive(TemperatureDef != null);
         }
 
         internal void UpdateGUIText()
@@ -100,6 +98,20 @@ namespace EOSExt.EnvTemperature.Components
             }
         }
 
+        private void UpdateMoveSpeed() 
+        { 
+            if(TemperatureSetting == null || TemperatureSetting.SlowDownMultiplier_Move <= 0f)
+            {
+                Patches_PLOC.ResetMoveSpeedModifier();
+            }
+            else 
+            {
+                Patches_PLOC.SetMoveSpeedModifier(TemperatureSetting.SlowDownMultiplier_Move);
+            }
+        } 
+        
+        private void ResetMoveSpeed() => Patches_PLOC.ResetMoveSpeedModifier();
+        
         public void UpdateTemperatureDefinition(TemperatureDefinition def)
         {
             TemperatureDef = def;
@@ -118,6 +130,7 @@ namespace EOSExt.EnvTemperature.Components
             PlayerTemperature = TemperatureDef != null ? TemperatureDef.StartTemperature : DEFAULT_PLAYER_TEMPERATURE;
             UpdateGUIText();
             SetupGUI();
+            ResetMoveSpeed();
         }
 
         private void DealDamage()
@@ -152,20 +165,23 @@ namespace EOSExt.EnvTemperature.Components
             }
 
             // binary search for settings that matches current temperature
-            int low = 0, high = settings.Count;
+            int low = 0, high = settings.Count - 1;
             float cur = PlayerTemperature;
             while(low < high)
             {
                 int mid = (low + high) / 2;
 
-                var s = settings[mid];
-                if(cur > s.Temperature)
+                float l = settings[mid].Temperature;
+                float r = mid + 1 < settings.Count ? settings[mid + 1].Temperature : 1.0f;
+
+                if (l <= cur && cur < r) break;
+                else if(cur < l)
+                {
+                    high = mid - 1;
+                }
+                else // r <= cur
                 {
                     low = mid + 1;
-                }
-                else
-                {
-                    high = mid;
                 }
             }
 
@@ -182,13 +198,23 @@ namespace EOSExt.EnvTemperature.Components
 
             var z = PlayerAgent.CourseNode.m_zone;
 
-            if(!TemperatureDefinitionManager.Current.TryGetZoneDefinition(z.DimensionIndex, z.Layer.m_type, z.LocalIndex, out var zoneTempDef))
+            if(TemperatureDefinitionManager.Current.TryGetZoneDefinition(z.DimensionIndex, z.Layer.m_type, z.LocalIndex, out var zoneTempDef))
             {
-                zoneTempDef = TemperatureDefinitionManager.DEFAULT_ZONE_DEF;
+                PlayerTemperature -= zoneTempDef.DecreaseRate * Time.deltaTime;
+                PlayerTemperature = Math.Clamp(PlayerTemperature, 0.005f, 1f);
+            }
+            else
+            {
+                if(PlayerTemperature > TemperatureDef.StartTemperature)
+                {
+                    PlayerTemperature -= Math.Min(PlayerTemperature - TemperatureDef.StartTemperature, 0.01f) * Time.deltaTime;
+                }
+                else
+                {
+                    PlayerTemperature += Math.Min(TemperatureDef.StartTemperature - PlayerTemperature, 0.01f) * Time.deltaTime;
+                }
             }
 
-            PlayerTemperature -= zoneTempDef.DecreaseRate * Time.deltaTime;
-            PlayerTemperature = Math.Clamp(PlayerTemperature, 0.005f, 1f);
 
             float movement_speed = PlayerAgent.Locomotion.LastMoveDelta.magnitude / Clock.FixedDelta;
             float player_sprint_speed = (PlayerAgent.PlayerData.walkMoveSpeed + PlayerAgent.PlayerData.runMoveSpeed) * 0.5f;
@@ -247,6 +273,7 @@ namespace EOSExt.EnvTemperature.Components
             }
 
             UpdateGui();
+            UpdateMoveSpeed();
         }
 
         public static bool TryGetCurrentManager(out PlayerTemperatureManager mgr)

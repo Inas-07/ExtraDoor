@@ -49,8 +49,10 @@ namespace EOSExt.EnvTemperature
                 {
                     List<TemperatureSetting> newList = new();
 
-                    TemperatureSetting prependSetting = new(tempIntervals[0]);
-                    prependSetting.Temperature = 0.0f;
+                    TemperatureSetting prependSetting = new(tempIntervals[0])
+                    {
+                        Temperature = 0.0f
+                    };
 
                     newList.Add(prependSetting);
                     newList.AddRange(tempIntervals);

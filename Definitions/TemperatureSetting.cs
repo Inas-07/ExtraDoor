@@ -19,6 +19,8 @@ namespace EOSExt.EnvTemperature.Definitions
 
         public float SlowDownMultiplier_Melee { get; set; } = -1.0f;
 
+        public float SlowDownMultiplier_Move { get; set; } = -1.0f;
+
         public TemperatureSetting() { }
 
         public TemperatureSetting(TemperatureSetting o)
@@ -28,6 +30,7 @@ namespace EOSExt.EnvTemperature.Definitions
             DamageTick = o.DamageTick;
             SlowDownMultiplier_Reload = o.SlowDownMultiplier_Reload;
             SlowDownMultiplier_Melee = o.SlowDownMultiplier_Melee;
+            SlowDownMultiplier_Move = o.SlowDownMultiplier_Move;
         }
     }
 }

@@ -33,7 +33,7 @@ namespace EOSExt.EnvTemperature.Patches
                 bool flag = __instance.RegisterDamage(damage);
                 if (flag)
                 {
-                    //__instance.SendSetDead();
+                    __instance.SendSetDead();
                 }
                 else
                 {
@@ -41,7 +41,7 @@ namespace EOSExt.EnvTemperature.Patches
                 }
             }
 
-            __instance.Hitreact(data.damage.Get(__instance.HealthMax), UnityEngine.Vector3.zero, triggerCameraShake: !s_disableDialog, triggerGenericDialog: !s_disableDialog);
+            __instance.Hitreact(data.damage.Get(__instance.HealthMax), UnityEngine.Vector3.zero, triggerCameraShake: true, triggerGenericDialog: !s_disableDialog);
             return false;
         }
     }
