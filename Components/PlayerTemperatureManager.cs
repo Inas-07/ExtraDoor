@@ -21,6 +21,8 @@ namespace EOSExt.EnvTemperature.Components
 
         public const float TEMPERATURE_SETTING_UPDATE_TIME = 1f;
 
+        public const float TEMPERATURE_FLUCTUATE_TIME = 1f;
+
         public TemperatureDefinition? TemperatureDef { get; private set; }
 
         public TemperatureSetting? TemperatureSetting { get; private set; }
@@ -29,7 +31,9 @@ namespace EOSExt.EnvTemperature.Components
         
         private float m_tempSettingLastUpdateTime = 0f;
         private float m_lastDamageTime = 0f;
+        private float m_tempFluctuateTime = 0f;
         private bool m_ShowDamageWarning = true;
+
 
         private TextMeshPro m_TemperatureText;
 
@@ -122,7 +126,7 @@ namespace EOSExt.EnvTemperature.Components
         private void OnBuildDone()
         {
             var def = TemperatureDefinitionManager.Current.GetDefinition(RundownManager.ActiveExpedition.LevelLayoutData);
-            UpdateTemperatureDefinition(def.Definition);
+            UpdateTemperatureDefinition(def?.Definition ?? null);
         }
 
         private void OnEnterLevel()
@@ -196,69 +200,97 @@ namespace EOSExt.EnvTemperature.Components
                 || TemperatureDef == null 
                 || PlayerAgent == null) return;
 
-            var z = PlayerAgent.CourseNode.m_zone;
-
-            if(TemperatureDefinitionManager.Current.TryGetZoneDefinition(z.DimensionIndex, z.Layer.m_type, z.LocalIndex, out var zoneTempDef))
-            {
-                PlayerTemperature -= zoneTempDef.DecreaseRate * Time.deltaTime;
-                PlayerTemperature = Math.Clamp(PlayerTemperature, 0.005f, 1f);
-            }
-            else
-            {
-                if(PlayerTemperature > TemperatureDef.StartTemperature)
-                {
-                    PlayerTemperature -= Math.Min(PlayerTemperature - TemperatureDef.StartTemperature, 0.01f) * Time.deltaTime;
-                }
-                else
-                {
-                    PlayerTemperature += Math.Min(TemperatureDef.StartTemperature - PlayerTemperature, 0.01f) * Time.deltaTime;
-                }
-            }
-
-
             float movement_speed = PlayerAgent.Locomotion.LastMoveDelta.magnitude / Clock.FixedDelta;
             float player_sprint_speed = (PlayerAgent.PlayerData.walkMoveSpeed + PlayerAgent.PlayerData.runMoveSpeed) * 0.5f;
 
+            float actionTempDelta = 0f;
             switch (PlayerAgent.Locomotion.m_currentStateEnum)
             {
                 case PlayerLocomotion.PLOC_State.Stand:
-                    PlayerTemperature += TemperatureDef.StandingActionHeatGained * Time.deltaTime;
+                    actionTempDelta = TemperatureDef.StandingActionHeatGained * Time.deltaTime;
+                    //PlayerTemperature += TemperatureDef.StandingActionHeatGained * Time.deltaTime;
                     break;
 
                 case PlayerLocomotion.PLOC_State.Crouch:
                     if (movement_speed <= player_sprint_speed)
                     {
-                        PlayerTemperature += TemperatureDef.CrouchActionHeatGained * Time.deltaTime;
+                        actionTempDelta = TemperatureDef.CrouchActionHeatGained * Time.deltaTime;
+                        //PlayerTemperature += TemperatureDef.CrouchActionHeatGained * Time.deltaTime;
                     }
                     else
                     {
-                        PlayerTemperature += (TemperatureDef.CrouchActionHeatGained + TemperatureDef.SprintActionHeatGained) * Time.deltaTime;
+                        actionTempDelta = (TemperatureDef.CrouchActionHeatGained + TemperatureDef.SprintActionHeatGained) * Time.deltaTime;
+                        //PlayerTemperature += (TemperatureDef.CrouchActionHeatGained + TemperatureDef.SprintActionHeatGained) * Time.deltaTime;
                     }
 
                     break;
                     
                 case PlayerLocomotion.PLOC_State.Run:
-                    PlayerTemperature += TemperatureDef.SprintActionHeatGained * Time.deltaTime;
+                    actionTempDelta = TemperatureDef.SprintActionHeatGained * Time.deltaTime;
+                    //PlayerTemperature += TemperatureDef.SprintActionHeatGained * Time.deltaTime;
                     break;
 
                 case PlayerLocomotion.PLOC_State.Jump:
                     if (movement_speed <= player_sprint_speed)
                     {
-                        PlayerTemperature += TemperatureDef.JumpActionHeatGained * Time.deltaTime;
+                        actionTempDelta = TemperatureDef.JumpActionHeatGained * Time.deltaTime;
+                        //PlayerTemperature += TemperatureDef.JumpActionHeatGained * Time.deltaTime;
                     }
                     else
                     {
-                        PlayerTemperature += (TemperatureDef.JumpActionHeatGained + TemperatureDef.SprintActionHeatGained) * Time.deltaTime;
+                        actionTempDelta = (TemperatureDef.JumpActionHeatGained + TemperatureDef.SprintActionHeatGained) * Time.deltaTime;
+                        //PlayerTemperature += (TemperatureDef.JumpActionHeatGained + TemperatureDef.SprintActionHeatGained) * Time.deltaTime;
                     }
                     break;
 
                 case PlayerLocomotion.PLOC_State.Downed:
-                    PlayerTemperature = 0.75f;
+                    //PlayerTemperature = 0.75f;
+                    actionTempDelta = 0f;
                     break;
+
                 case PlayerLocomotion.PLOC_State.ClimbLadder:
-                    PlayerTemperature += TemperatureDef.LadderClimbingActionHeatGained * Time.deltaTime;
+                    actionTempDelta = TemperatureDef.LadderClimbingActionHeatGained * Time.deltaTime;
+                    //PlayerTemperature += TemperatureDef.LadderClimbingActionHeatGained * Time.deltaTime;
                     break;
             }
+
+            float zoneTemp = TemperatureDef.StartTemperature;
+            var z = PlayerAgent.CourseNode.m_zone;
+
+            float temp_downlimit = TemperatureDefinitionManager.MIN_TEMP;
+            float temp_uplimit = TemperatureDefinitionManager.MAX_TEMP;
+
+            if (TemperatureDefinitionManager.Current.TryGetZoneDefinition(z.DimensionIndex, z.Layer.m_type, z.LocalIndex, out var zoneTempDef))
+            {
+                zoneTemp = zoneTempDef.Temperature_Normal;
+                temp_downlimit = zoneTempDef.Temperature_Downlimit;
+                temp_uplimit = zoneTempDef.Temperature_Uplimit;
+            }
+
+            if (Math.Abs(actionTempDelta) < 1e-5)
+            {
+                if (Time.time - m_tempFluctuateTime > TEMPERATURE_FLUCTUATE_TIME)
+                {
+                    float tempFluctuation = zoneTempDef.FluctuationIntensity * UnityEngine.Random.RandomRange(0f, 1f);
+                    if (PlayerTemperature > zoneTemp)
+                    {
+                        PlayerTemperature -= tempFluctuation;
+                    }
+                    else
+                    {
+                        PlayerTemperature += tempFluctuation;
+                    }
+
+                    m_tempFluctuateTime = Time.time;
+                }
+            }
+            else
+            {
+                m_tempFluctuateTime = Time.time;
+            }
+
+            PlayerTemperature += actionTempDelta;
+            PlayerTemperature = Math.Clamp(PlayerTemperature, temp_downlimit, temp_uplimit);
 
             UpdateTemperatureSettings();
 

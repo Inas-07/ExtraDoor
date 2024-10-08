@@ -6,6 +6,7 @@ using GameData;
 using GTFO.API;
 using GTFO.API.Utilities;
 using LevelGeneration;
+using System;
 using System.Collections.Generic;
 
 namespace EOSExt.EnvTemperature
@@ -16,7 +17,11 @@ namespace EOSExt.EnvTemperature
 
         protected override string DEFINITION_NAME => "EnvTemperature";
 
-        public static readonly TemperatureZoneDefinition DEFAULT_ZONE_DEF = new TemperatureZoneDefinition() { DecreaseRate = 0.0f };
+        public static readonly TemperatureZoneDefinition DEFAULT_ZONE_DEF = new TemperatureZoneDefinition() { FluctuationIntensity = 0.0f };
+
+        public const float MIN_TEMP = 0.005f;
+
+        public const float MAX_TEMP = 1f;
 
         private Dictionary<(eDimensionIndex dimensionIndex, LG_LayerType layerType, eLocalZoneIndex localIndex), TemperatureZoneDefinition> zoneDefs { get; } = new();
 
@@ -62,6 +67,28 @@ namespace EOSExt.EnvTemperature
                     tempIntervals.Clear();
                     tempIntervals = newList;
                 }
+            }
+
+            foreach(var zoneDef in definition.Definition.Zones)
+            {
+                zoneDef.Temperature_Downlimit = Math.Clamp(zoneDef.Temperature_Downlimit, MIN_TEMP, MAX_TEMP);
+                zoneDef.Temperature_Uplimit = Math.Clamp(zoneDef.Temperature_Uplimit, MIN_TEMP, MAX_TEMP);
+
+                if (zoneDef.Temperature_Downlimit > zoneDef.Temperature_Uplimit)
+                {
+                    EOSLogger.Error($"Invalid Temperature_Down/Up-limit setting! Downlimit == {zoneDef.Temperature_Downlimit}, Uplimit == {zoneDef.Temperature_Uplimit}");
+                    float temp = zoneDef.Temperature_Downlimit;
+                    zoneDef.Temperature_Downlimit = zoneDef.Temperature_Uplimit;
+                    zoneDef.Temperature_Uplimit = temp;
+                }
+
+                if(!(zoneDef.Temperature_Downlimit <= zoneDef.Temperature_Normal && zoneDef.Temperature_Normal <= zoneDef.Temperature_Uplimit))
+                {
+                    EOSLogger.Error($"Invalid Temperature_Normal setting! Temperature_Normal == {zoneDef.Temperature_Normal} not in limit range [{zoneDef.Temperature_Downlimit}, {zoneDef.Temperature_Uplimit}] !");
+                    zoneDef.Temperature_Normal = Math.Clamp(zoneDef.Temperature_Normal, zoneDef.Temperature_Downlimit, zoneDef.Temperature_Uplimit);
+                }
+
+                zoneDef.FluctuationIntensity = Math.Abs(zoneDef.FluctuationIntensity);
             }
 
             base.AddDefinitions(definition);
