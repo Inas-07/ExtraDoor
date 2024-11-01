@@ -318,7 +318,7 @@ namespace EOSExt.EnvTemperature.Components
             }
 
             mgr = p.gameObject.GetComponent<PlayerTemperatureManager>();
-            if (p == null)
+            if (mgr == null)
             {
                 EOSLogger.Error("LocalPlayerAgent does not have `PlayerTemperatureManager`!");
                 return false;
