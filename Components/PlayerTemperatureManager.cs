@@ -51,6 +51,13 @@ namespace EOSExt.EnvTemperature.Components
             PlayerAgent = gameObject.GetComponent<PlayerAgent>();
             LevelAPI.OnBuildDone += OnBuildDone;
             LevelAPI.OnEnterLevel += OnEnterLevel;
+
+            EOSLogger.Warning($"GameState: {GameStateManager.CurrentStateName}");
+            if(GameStateManager.CurrentStateName == eGameStateName.ExpeditionFail)
+            {
+                OnBuildDone();
+                OnEnterLevel();
+            }
         }
 
         private void OnDestroy()
