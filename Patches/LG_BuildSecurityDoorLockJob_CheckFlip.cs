@@ -11,7 +11,7 @@ using UnityEngine;
 namespace EOSExt.CircularZones.Patches
 {
     [HarmonyPatch]
-    internal static class FlipLock
+    internal static class LG_BuildSecurityDoorLockJob_CheckFlip
     {
         [HarmonyPatch(typeof(LG_BuildSecurityDoorLockJob), nameof(LG_BuildSecurityDoorLockJob.CheckFlip))]
         private static void Postfix(LG_BuildSecurityDoorLockJob __instance)

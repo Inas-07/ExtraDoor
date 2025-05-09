@@ -38,7 +38,7 @@ namespace EOSExt.CircularZones
         /// </summary>
         private void SetupManagers()
         {
-
+            ForceConnectManager.Current.Init();
         }
     }
 }
