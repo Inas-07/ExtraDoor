@@ -4,8 +4,9 @@ using ExtraObjectiveSetup.Utils;
 using ExtraObjectiveSetup.JSON;
 using GTFO.API;
 using HarmonyLib;
+using ExtraObjectiveSetup.JSON.MTFOPartialData;
 
-namespace EOSExt.EnvTemperature
+namespace EOSExt.CircularZones
 {
     [BepInDependency("dev.gtfomodding.gtfo-api", BepInDependency.DependencyFlags.HardDependency)]
     [BepInDependency("GTFO.FloLib", BepInDependency.DependencyFlags.HardDependency)]
@@ -17,8 +18,8 @@ namespace EOSExt.EnvTemperature
     public class EntryPoint: BasePlugin
     {
         public const string AUTHOR = "Inas";
-        public const string PLUGIN_NAME = "EOSExt.EnvTemperature";
-        public const string VERSION = "1.0.3";
+        public const string PLUGIN_NAME = "EOSExt.CircularZones";
+        public const string VERSION = "1.0.0";
 
         private Harmony m_Harmony;
 
@@ -26,10 +27,10 @@ namespace EOSExt.EnvTemperature
         {
             SetupManagers();
 
-            m_Harmony = new Harmony("EOSExt.EnvTemperature");
+            m_Harmony = new Harmony("EOSExt.CircularZones");
             m_Harmony.PatchAll();
 
-            EOSLogger.Log("ExtraObjectiveSetup.EnvTemperature loaded.");
+            EOSLogger.Log("ExtraObjectiveSetup.CircularZones loaded.");
         }
 
         /// <summary>
@@ -37,7 +38,7 @@ namespace EOSExt.EnvTemperature
         /// </summary>
         private void SetupManagers()
         {
-            TemperatureDefinitionManager.Current.Init();
+
         }
     }
 }
