@@ -30,7 +30,7 @@ namespace EOSExt.ExtraDoor.Patches
                 if(anim != null)
                 {
                     anim.OnDoorOpenStarted = (Il2CppSystem.Action)__instance.FCOnDoorOpenStarted;
-                    anim.OnDoorIsOpen = (Il2CppSystem.Action)__instance.OnDoorIsOpened;
+                    anim.OnDoorIsOpen = (Il2CppSystem.Action)__instance.FCOnDoorIsOpen;
                 }
                 else
                 {
@@ -38,7 +38,7 @@ namespace EOSExt.ExtraDoor.Patches
                     if(apexAnim != null)
                     {
                         apexAnim.OnDoorOpenStarted = (Il2CppSystem.Action)__instance.FCOnDoorOpenStarted;
-                        apexAnim.OnDoorIsOpen = (Il2CppSystem.Action)__instance.OnDoorIsOpened;
+                        apexAnim.OnDoorIsOpen = (Il2CppSystem.Action)__instance.FCOnDoorIsOpen;
                     }
                     else
                     {
