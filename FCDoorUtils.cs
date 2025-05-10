@@ -147,7 +147,10 @@ namespace EOSExt.ExtraDoor
                             fcdoor.m_sound.Post(EVENTS.MONSTER_RUCKUS_FROM_BEHIND_SECURITY_DOOR_LOOP_STOP, true);
                             if (!isRecall && SNet.IsMaster)
                             {
-                                AIG_CourseNode courseNode = fcdoor.Gate.GetOppositeArea(fcdoor.Gate.ProgressionSourceArea).m_courseNode;
+                                var cfg = fc.Cfg;
+                                //AIG_CourseNode courseNode = fcdoor.Gate.GetOppositeArea(fcdoor.Gate.ProgressionSourceArea).m_courseNode;
+                                Builder.CurrentFloor.TryGetZoneByLocalIndex(cfg.DimensionIndex, cfg.To.Layer, cfg.To.LocalIndex, out var enemyZone);
+                                var courseNode = enemyZone.m_areas[cfg.To.AreaIndex].m_courseNode;
                                 Vector3 position = fcdoor.transform.position + fcdoor.Gate.CoursePortal.DirectionTowardsNode(courseNode) * 1.5f + Vector3.up * 0.3f;
                                 Vector3 gateCrossingVec = fcdoor.Gate.GetGateCrossingVec();
 

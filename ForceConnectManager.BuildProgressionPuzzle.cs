@@ -67,12 +67,13 @@ namespace EOSExt.ExtraDoor
 
                     case eProgressionPuzzleType.PowerGenerator_And_PowerCell:
                         {
-                            AIG_CourseNode nodeForOppositeZone = toZone.m_sourceGate.CoursePortal.GetNodeForOppositeZone(toZone);
-                            LG_DistributeItem item = new LG_DistributeItem(ExpeditionFunction.PowerGenerator, 1f, nodeForOppositeZone, null)
+                            //AIG_CourseNode generatorNode = toZone.m_sourceGate.CoursePortal.GetNodeForOppositeZone(toZone);
+                            var generatorNode = fromZone.m_areas[from.AreaIndex].m_courseNode;
+                            LG_DistributeItem item = new LG_DistributeItem(ExpeditionFunction.PowerGenerator, 1f, generatorNode, null)
                             {
                                 m_assignedGate = door.Gate
                             };
-                            nodeForOppositeZone.m_zone.DistributionData.GenericFunctionItems.Enqueue(item);
+                            generatorNode.m_zone.DistributionData.GenericFunctionItems.Enqueue(item);
 
                             LG_Zone cellZone = null;
                             for (int k = 0; k < ppe.PlacementCount; k++)
@@ -83,10 +84,10 @@ namespace EOSExt.ExtraDoor
                                 if (ppe.ZonePlacementData.Count > 0)
                                 {
                                     var data = ppe.ZonePlacementData[Builder.SessionSeedRandom.Range(0, ppe.ZonePlacementData.Count, "NO_TAG")];
-                                    if (layer.m_zonesByLocalIndex.TryGetValue(data.LocalIndex, out var lg_Zone2))
+                                    if (layer.m_zonesByLocalIndex.ContainsKey(data.LocalIndex))
                                     {
-                                        zone = lg_Zone2;
-                                        cellZone = lg_Zone2;
+                                        zone = layer.m_zonesByLocalIndex[data.LocalIndex];
+                                        cellZone = layer.m_zonesByLocalIndex[data.LocalIndex];
 
                                         weight = data.Weights;
                                     }
@@ -100,14 +101,16 @@ namespace EOSExt.ExtraDoor
                                     EOSLogger.Error($"ProgressionPuzzleToEnter has NO placement data for power cell going into {layer.m_type} lg_Zone.LocalIndex");
                                 }
 
-                                LG_Factory.InjectJob(new LG_Distribute_PickupItemsPerZone(zone, 1f, ePickupItemType.BigGenericPickup, 131U, weight), LG_Factory.BatchName.Distribution);
+                                //LG_Factory.InjectJob(new LG_Distribute_PickupItemsPerZone(zone, 1f, ePickupItemType.BigGenericPickup, 131U, weight), LG_Factory.BatchName.Distribution);
+                                new LG_Distribute_PickupItemsPerZone(zone, 1f, ePickupItemType.BigGenericPickup, 131U, weight).Build();
+
                             }
 
                             // TODO: 有多个cell时，却只注册其中一个
                             if (cellZone != null)
                             {
                                 ProgressionObjectivesManager.RegisterProgressionObjective(toZone.DimensionIndex, toZone.Layer.m_type, toZone.LocalIndex,
-                                    new ProgressionObjective_GeneratorCell(toZone, cellZone, nodeForOppositeZone.m_zone).Cast<IProgressionObjective>());
+                                    new ProgressionObjective_GeneratorCell(toZone, cellZone, generatorNode.m_zone).Cast<IProgressionObjective>());
                             }
                             break;
                         }
@@ -125,10 +128,9 @@ namespace EOSExt.ExtraDoor
             EOSLogger.Log($"CreateKeyItemDistribution, keyItem: {keyItem}, placementData: {placementData}");
 
             LG_Zone lg_Zone = doorLayer.m_zones[0];
-            LG_Zone lg_Zone2;
-            if (doorLayer.m_zonesByLocalIndex.TryGetValue(placementData.LocalIndex, out lg_Zone2))
+            if (doorLayer.m_zonesByLocalIndex.ContainsKey(placementData.LocalIndex))
             {
-                lg_Zone = lg_Zone2;
+                lg_Zone = doorLayer.m_zonesByLocalIndex[placementData.LocalIndex];
             }
             else
             {
@@ -149,7 +151,7 @@ namespace EOSExt.ExtraDoor
             LG_DistributeItem lg_DistributeItem;
             if (LG_DistributionJobUtils.TryGetExistingZoneFunctionDistribution(lg_Zone, ExpeditionFunction.ResourceContainerWeak, Builder.SessionSeedRandom.Value("LG_Distribute_ProgressionPuzzles.CreateKeyItemDistribution_TryGetZoneFunctionDistribution"), placementData.Weights, out lg_DistributeItem, out aig_CourseNode, true, "FindContainerFor " + keyItem))
             {
-                LG_DistributeResourceContainer lg_DistributeResourceContainer = lg_DistributeItem as LG_DistributeResourceContainer;
+                LG_DistributeResourceContainer lg_DistributeResourceContainer = lg_DistributeItem.Cast<LG_DistributeResourceContainer>();
                 if (lg_DistributeResourceContainer != null)
                 {
                     lg_DistributeResourceContainer.m_packs.Add(resourceContainerSpawnData);

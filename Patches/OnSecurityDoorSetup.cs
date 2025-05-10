@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using ExtraObjectiveSetup.Utils;
+using HarmonyLib;
 using Il2CppSystem.Linq;
 using LevelGeneration;
 using System;
@@ -19,18 +20,31 @@ namespace EOSExt.ExtraDoor.Patches
             var fc = __instance.GetFC();
             if (fc != null)
             {
+                ForceConnectManager.Current.RegisterFCDoor(__instance);
                 fc.LinkedSecDoor = __instance;
 
+                var sync = __instance.m_sync.Cast<LG_Door_Sync>();
+                sync.OnDoorStateChange = (Il2CppSystem.Action<pDoorState, bool>)__instance.FCOnSyncDoorStatusChange;
 
-                __instance.m_sync.remove_OnDoorStateChange((Il2CppSystem.Action<pDoorState, bool>)__instance.OnSyncDoorStatusChange);
-                __instance.m_sync.add_OnDoorStateChange((Il2CppSystem.Action<pDoorState, bool>)__instance.FCOnSyncDoorStatusChange);
-
-                __instance.m_anim.remove_OnDoorOpenStarted((Il2CppSystem.Action)__instance.OnDoorOpenStarted);
-                __instance.m_anim.add_OnDoorOpenStarted((Il2CppSystem.Action)__instance.FCOnDoorOpenStarted);
-
-                __instance.m_anim.remove_OnDoorIsOpen((Il2CppSystem.Action)__instance.OnDoorIsOpened);
-                __instance.m_anim.add_OnDoorOpenStarted((Il2CppSystem.Action)__instance.FCOnDoorIsOpen);
-
+                var anim = __instance.m_anim.TryCast<LG_SecurityDoor_Anim>();
+                if(anim != null)
+                {
+                    anim.OnDoorOpenStarted = (Il2CppSystem.Action)__instance.FCOnDoorOpenStarted;
+                    anim.OnDoorIsOpen = (Il2CppSystem.Action)__instance.OnDoorIsOpened;
+                }
+                else
+                {
+                    var apexAnim = __instance.m_anim.TryCast<LG_SecurityDoor_Anim>();
+                    if(apexAnim != null)
+                    {
+                        apexAnim.OnDoorOpenStarted = (Il2CppSystem.Action)__instance.FCOnDoorOpenStarted;
+                        apexAnim.OnDoorIsOpen = (Il2CppSystem.Action)__instance.OnDoorIsOpened;
+                    }
+                    else
+                    {
+                        EOSLogger.Error("LG_SecurityDoor: Cannot cast iLG_Door_Anim");
+                    }
+                }
             }
         }
     }

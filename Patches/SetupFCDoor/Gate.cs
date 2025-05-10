@@ -2,6 +2,7 @@
 using Expedition;
 using ExtraObjectiveSetup.Utils;
 using GameData;
+using GTFO.API.Extensions;
 using HarmonyLib;
 using LevelGeneration;
 using LogUtils;
@@ -11,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-
+using CullingSystem;
 namespace EOSExt.ExtraDoor.Patches.SetupFCDoor
 {
     [HarmonyPatch]
@@ -22,6 +23,7 @@ namespace EOSExt.ExtraDoor.Patches.SetupFCDoor
         [HarmonyPatch(typeof(LG_BuildGateJob), nameof(LG_BuildGateJob.Build))]
         private static bool Pre_(LG_BuildGateJob __instance, ref bool __result)
         {
+            if (__instance.m_plug == null) return true;
             var fc = __instance.m_plug.gameObject.GetComponent<ForceConnect>();
             if (fc == null) return true;
 
@@ -144,7 +146,8 @@ namespace EOSExt.ExtraDoor.Patches.SetupFCDoor
                                     __instance.m_gate.m_hasBeenFlipped = false;
                                 }
                                 GameObject gameObject2 = UnityEngine.Object.Instantiate<GameObject>(gateGO, position, rotation, __instance.m_gate.transform);
-                                __instance.m_gate.SpawnedDoor = __instance.SetupDoor(gameObject2);
+                                //__instance.m_gate.SpawnedDoor = __instance.SetupDoor(gameObject2);
+                                __instance.m_gate.SpawnedDoor = SetupDoor(__instance, gameObject2, fc);
                                 __instance.SetupSpawners(gameObject2);
                                 __instance.ProcessDivider(gameObject2, __instance.m_gate.m_hasBeenFlipped);
                                 Debug.DrawLine(__instance.m_gate.transform.position, __instance.m_gate.m_linksFrom.Position, new Color(0f, 0.5f, 1f, 1f), 10000f, false);
@@ -186,6 +189,25 @@ namespace EOSExt.ExtraDoor.Patches.SetupFCDoor
                 __instance.m_gate.m_wasProcessed = false;
                 return true;
             }
+        }
+
+        private static iLG_Door_Core SetupDoor(LG_BuildGateJob __instance, GameObject doorGO, ForceConnect fc)
+        {
+            var core = __instance.SetupDoor(doorGO);
+            if (__instance.m_gate.ForceSecurityGate || __instance.m_gate.ForceApexGate || __instance.m_gate.m_isZoneSource)
+            {
+                LG_SecurityDoor lg_SecurityDoor = core.Cast<LG_SecurityDoor>();
+                //if (core.IsCheckpointDoor)
+                //{
+                //    LG_Factory.InjectJob(new LG_SecurityDoor.LG_CheckpointScannerJob(lg_SecurityDoor), LG_Factory.BatchName.DoorLocks);
+                //}
+                if (fc.Cfg.Setting.ActiveEnemyWave.HasActiveEnemyWave)
+                {
+                    lg_SecurityDoor.SetupActiveEnemyWaveData(fc.Cfg.Setting.ActiveEnemyWave);
+                }
+            }
+
+            return core;
         }
     }
 }

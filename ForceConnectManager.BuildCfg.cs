@@ -98,7 +98,5 @@ namespace EOSExt.ExtraDoor
                 defs.Definitions.ForEach(BuildCfg);
             }
         }
-
-
     }
 }
