@@ -6,7 +6,7 @@ using GTFO.API;
 using HarmonyLib;
 using ExtraObjectiveSetup.JSON.MTFOPartialData;
 
-namespace EOSExt.CircularZones
+namespace EOSExt.ExtraDoor
 {
     [BepInDependency("dev.gtfomodding.gtfo-api", BepInDependency.DependencyFlags.HardDependency)]
     [BepInDependency("GTFO.FloLib", BepInDependency.DependencyFlags.HardDependency)]
@@ -18,19 +18,20 @@ namespace EOSExt.CircularZones
     public class EntryPoint: BasePlugin
     {
         public const string AUTHOR = "Inas";
-        public const string PLUGIN_NAME = "EOSExt.CircularZones";
+        public const string PLUGIN_NAME = "EOSExt.ExtraDoor";
         public const string VERSION = "1.0.0";
 
         private Harmony m_Harmony;
 
+        // 合并到EOSExt SecDoor中？
         public override void Load()
         {
             SetupManagers();
 
-            m_Harmony = new Harmony("EOSExt.CircularZones");
+            m_Harmony = new Harmony("EOSExt.ExtraDoor");
             m_Harmony.PatchAll();
 
-            EOSLogger.Log("ExtraObjectiveSetup.CircularZones loaded.");
+            EOSLogger.Log("ExtraObjectiveSetup.ExtraDoor loaded.");
         }
 
         /// <summary>

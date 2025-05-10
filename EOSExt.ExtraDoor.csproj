@@ -2,8 +2,8 @@
   <Import Project="Dependencies.props" />
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <RootNamespace>EOSExt.CircularZones</RootNamespace>
-    <AssemblyName>Inas07.EOSExt.CircularZones</AssemblyName>
+    <RootNamespace>EOSExt.ExtraDoor</RootNamespace>
+    <AssemblyName>Inas07.EOSExt.ExtraDoor</AssemblyName>
     <TargetFramework>net6</TargetFramework>
     <LangVersion>preview</LangVersion>
     <!--
@@ -28,13 +28,24 @@
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Config\AreaDoor.cs" />
+    <Compile Include="Config\DoorSetting.cs" />
+    <Compile Include="Config\FCProgressionPuzzleToEnter.cs" />
+    <Compile Include="Config\GateType.cs" />
     <Compile Include="EntryPoint.cs" />
+    <Compile Include="FCDoorUtils.cs" />
     <Compile Include="ForceConnect.cs" />
-    <Compile Include="ForceConnectCfg.cs" />
+    <Compile Include="Config\ForceConnectCfg.cs" />
+    <Compile Include="ForceConnectManager.BuildCfg.cs" />
+    <Compile Include="ForceConnectManager.BuildProgressionPuzzle.cs" />
     <Compile Include="ForceConnectManager.cs" />
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="Patches\FlipLock.cs" />
-    <Compile Include="Patches\LG_SecDoor.cs" />
+    <Compile Include="Patches\CheckDoorFlip.cs" />
+    <Compile Include="Patches\DisableAlarmShutdownOnTerminal\BuildJob_AlarmShutdownOnTerminalJob.cs" />
+    <Compile Include="Patches\DisableAlarmShutdownOnTerminal\DoorLock_OnDoorState.cs" />
+    <Compile Include="Patches\OnSecurityDoorSetup.cs" />
+    <Compile Include="Patches\SetupFCDoor\ChainedPuzzles.cs" />
+    <Compile Include="Patches\SetupFCDoor\Gate.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Dependencies.props" />

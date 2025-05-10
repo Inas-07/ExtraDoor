@@ -1,4 +1,4 @@
-﻿using EOSExt.CircularZones;
+﻿using EOSExt.ExtraDoor;
 using HarmonyLib;
 using LevelGeneration;
 using System;
@@ -8,21 +8,21 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace EOSExt.CircularZones.Patches
+namespace EOSExt.ExtraDoor.Patches
 {
     [HarmonyPatch]
-    internal static class LG_BuildSecurityDoorLockJob_CheckFlip
+    internal static class CheckDoorFlip
     {
         [HarmonyPatch(typeof(LG_BuildSecurityDoorLockJob), nameof(LG_BuildSecurityDoorLockJob.CheckFlip))]
         private static void Postfix(LG_BuildSecurityDoorLockJob __instance)
         {
-            var componentInParent = __instance.m_door.gameObject.GetComponentInParent<ForceConnect>();
-            bool flag = componentInParent != null && componentInParent.ShouldFlipDoor;
-            if (flag)
+            var fc = __instance.m_door.GetFC();
+            if (fc?.ShouldFlipDoor ?? false)
             {
                 LG_SecurityDoor door = __instance.m_door;
                 door.FlippedForProgresion = !door.FlippedForProgresion;
                 door.transform.rotation = Quaternion.LookRotation(door.transform.forward * -1f, door.transform.up);
+                
             }
         }
     }

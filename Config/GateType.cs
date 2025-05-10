@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EOSExt.CircularZones.Patches.SetupDoor
+namespace EOSExt.ExtraDoor.Config
 {
-    internal class ChainedPuzzles
+    public enum GateType
     {
+        Security,
+        Apex,
+        Bulkhead,
     }
 }

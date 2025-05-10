@@ -1,13 +1,30 @@
 ﻿using AIGraph;
+using EOSExt.ExtraDoor.Config;
 using Il2CppInterop.Runtime.Injection;
 using LevelGeneration;
 using UnityEngine;
 using Il2cppAIGPortalList = Il2CppSystem.Collections.Generic.List<AIGraph.AIG_CoursePortal>;
 
-namespace EOSExt.CircularZones
+namespace EOSExt.ExtraDoor
 {
-    internal sealed class ForceConnect : MonoBehaviour
+    public class ForceConnect : MonoBehaviour
     {
+        public LG_SecurityDoor LinkedSecDoor { get; internal set; }
+
+        public ForceConnectCfg Cfg { get; internal set; }
+        
+        internal bool ShouldFlipDoor;
+
+        private bool _IsDynamicPortalSetup;
+
+        private AIG_CourseNode _FromNode;
+
+        private AIG_CourseNode _ToNode;
+
+        private AIG_CoursePortal _Portal;
+
+        private bool _PortalEnabled = true;
+
         private void Update()
         {
             if (!_IsDynamicPortalSetup && LinkedSecDoor != null && GameStateManager.CurrentStateName == eGameStateName.InLevel)
@@ -63,22 +80,6 @@ namespace EOSExt.CircularZones
                 }
             }
         }
-
-        public int ID;
-
-        public LG_SecurityDoor LinkedSecDoor;
-
-        public bool ShouldFlipDoor;
-
-        private bool _IsDynamicPortalSetup;
-
-        private AIG_CourseNode _FromNode;
-
-        private AIG_CourseNode _ToNode;
-
-        private AIG_CoursePortal _Portal;
-
-        private bool _PortalEnabled = true;
 
         static ForceConnect()
         {
