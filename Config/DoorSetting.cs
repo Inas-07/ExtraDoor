@@ -21,7 +21,7 @@ namespace EOSExt.ExtraDoor.Config
 
         public List<WardenObjectiveEventData> EventsOnDoorScanDone { get; set; } = new();
 
-        public FCProgressionPuzzleToEnter ProgressionPuzzleToEnter { get; set; } = new();
+        public FCProgressionPuzzleToEnter ProgressionPuzzleToEnter { get; set; } = new(); // <---------------- Cannot parse
 
         public uint ChainedPuzzleToEnter { get; set; }
 
@@ -29,7 +29,6 @@ namespace EOSExt.ExtraDoor.Config
 
         public bool PlayScannerVoiceAudio { get; set; } = true;
 
-        //public eSecurityGateType SecurityGateToEnter { get; set; }
         public GateType SecurityGateToEnter { get; set; }
 
         public ActiveEnemyWaveData ActiveEnemyWave { get; set; } = new();

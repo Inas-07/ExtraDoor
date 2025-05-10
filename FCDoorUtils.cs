@@ -141,7 +141,8 @@ namespace EOSExt.ExtraDoor
                             navMarkerPlacer2.SetMarkerVisible(false);
                         }
                         fcdoor.m_mapLookatRevealer.SetLocalGUIObjStatus(isBulkheadDoor ? eCM_GuiObjectStatus.DoorBulkheadOpen : eCM_GuiObjectStatus.DoorSecureOpen);
-                        if (fcdoor.ActiveEnemyWaveData != null && fcdoor.ActiveEnemyWaveData.HasActiveEnemyWave)
+                        var aew = fc.Cfg.Setting.ActiveEnemyWave;
+                        if (aew != null && aew.HasActiveEnemyWave)
                         {
                             fcdoor.m_sound.Post(EVENTS.MONSTER_RUCKUS_FROM_BEHIND_SECURITY_DOOR_LOOP_STOP, true);
                             if (!isRecall && SNet.IsMaster)
@@ -150,7 +151,6 @@ namespace EOSExt.ExtraDoor
                                 Vector3 position = fcdoor.transform.position + fcdoor.Gate.CoursePortal.DirectionTowardsNode(courseNode) * 1.5f + Vector3.up * 0.3f;
                                 Vector3 gateCrossingVec = fcdoor.Gate.GetGateCrossingVec();
 
-                                var aew = fc.Cfg.Setting.ActiveEnemyWave;
                                 if (aew.EnemyGroupInfrontOfDoor != 0U)
                                 {
                                     EnemyGroupDataBlock block = GameDataBlockBase<EnemyGroupDataBlock>.GetBlock(aew.EnemyGroupInfrontOfDoor);

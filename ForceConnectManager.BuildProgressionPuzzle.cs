@@ -104,7 +104,7 @@ namespace EOSExt.ExtraDoor
                             }
 
                             // TODO: 有多个cell时，却只注册其中一个
-                            if(cellZone != null)
+                            if (cellZone != null)
                             {
                                 ProgressionObjectivesManager.RegisterProgressionObjective(toZone.DimensionIndex, toZone.Layer.m_type, toZone.LocalIndex,
                                     new ProgressionObjective_GeneratorCell(toZone, cellZone, nodeForOppositeZone.m_zone).Cast<IProgressionObjective>());
