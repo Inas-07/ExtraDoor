@@ -22,6 +22,34 @@ namespace EOSExt.ExtraDoor
     {
         public static ForceConnect? GetFC(this LG_SecurityDoor fcdoor) => fcdoor.gameObject.GetComponentInParent<ForceConnect>(); // get door from plug
 
+        public static List<(LG_ZoneExpander fromExp, LG_ZoneExpander toExp)> GetExpandersBetween(LG_Area fromArea, LG_Area toAreaB)
+        {
+            var lst = new List<(LG_ZoneExpander fromExp, LG_ZoneExpander toExp)>();
+            // O(N^2), required for setting up plug,
+            // for gate, we could make it O(N) but whatever
+            foreach (LG_ZoneExpander fromExp in fromArea.m_zoneExpanders)
+            {
+                foreach (LG_ZoneExpander toExp in toAreaB.m_zoneExpanders)
+                {
+                    Vector2 fromPos = new(fromExp.transform.position.x, fromExp.transform.position.z);
+                    Vector2 toPos = new(toExp.transform.position.x, toExp.transform.position.z);
+
+                    // FIXME: will break if having plug here is impossible
+                    if (Vector2.Distance(fromPos, toPos) <= 0.1f)
+                    {
+                        lst.Add((fromExp, toExp));
+                        // We can actually find some same plug tho
+                        //if (fromExp.Pointer == toExp.Pointer)
+                        //{
+                        //    EOSLogger.Warning("Same plug!");
+                        //}
+                    }
+                }
+            }
+
+            return lst;
+        }
+
         public static void FCOnDoorOpenStarted(this LG_SecurityDoor fcdoor)
         {
             if (fcdoor.m_securityDoorType == eSecurityDoorType.Bulkhead)

@@ -1,173 +1,122 @@
 ﻿//using EOSExt.ExtraDoor.Config;
 //using ExtraObjectiveSetup.Utils;
+//using GameData;
 //using LevelGeneration;
+//using SNetwork;
 //using System;
 //using System.Collections.Generic;
 //using System.Linq;
+//using System.Reflection.Metadata.Ecma335;
 //using System.Text;
 //using System.Threading.Tasks;
-//using UnityEngine;
 
 //namespace EOSExt.ExtraDoor
 //{
 //    public partial class ForceConnectManager
 //    {
-//        private void Connect2Zones(ForceConnectCfg cfg, LG_Zone fromZone, LG_Zone toZone)
+//        public enum FCDoorEventType
 //        {
-//            var from = cfg.From;
-//            var to = cfg.To;
-
-//            var fromArea = fromZone.m_areas[from.AreaIndex];
-//            var toArea = toZone.m_areas[to.AreaIndex];
-
-//            List<(LG_ZoneExpander expandFrom, LG_ZoneExpander expandTo)> lst = new();
-//            LG_ZoneExpander expandFrom = null, expandTo = null;
-//            foreach (LG_ZoneExpander fromExp in fromArea.m_zoneExpanders)
-//            {
-//                foreach (LG_ZoneExpander toExp in toArea.m_zoneExpanders)
-//                {
-//                    if (Vector3.Distance(fromExp.transform.position, toExp.transform.position) <= 0.1f)
-//                    {
-//                        expandFrom = fromExp;
-//                        expandTo = toExp;
-//                    }
-//                }
-//            }
-
-//            if (expandFrom == null || expandTo == null)
-//            {
-//                if (expandFrom == null)
-//                {
-//                    EOSLogger.Error($"CircularZones Build: Cannot find 'from' - ({(cfg.DimensionIndex, from.Layer, from.LocalIndex, (char)('A' + from.AreaIndex))})");
-//                }
-//                else
-//                {
-//                    EOSLogger.Error($"CircularZones Build: Cannot find 'to' - ({(cfg.DimensionIndex, to.Layer, to.LocalIndex, (char)('A' + to.AreaIndex))})");
-//                }
-//                return;
-//            }
-
-//            LG_Plug fromPlug = expandFrom.TryCast<LG_Plug>();
-//            LG_Plug toPlug = expandTo.TryCast<LG_Plug>();
-//            if (fromPlug == null || toPlug == null)
-//            {
-//                EOSLogger.Error($"CircularZones Build: Cannot find fromPlug or toPlug!\n"
-//                    + $"From:({(cfg.DimensionIndex, from.Layer, from.LocalIndex, (char)('A' + from.AreaIndex))})"
-//                    + $"To:({(cfg.DimensionIndex, to.Layer, to.LocalIndex, (char)('A' + to.AreaIndex))})");
-//                return;
-//            }
-
-//            expandFrom.ExpanderStatus = LG_ZoneExpanderStatus.Connected;
-//            expandTo.ExpanderStatus = LG_ZoneExpanderStatus.Connected;
-//            expandFrom.m_linksTo = expandTo.m_linksFrom;
-//            expandTo.m_linksTo = expandFrom.m_linksFrom;
-
-//            fromPlug.m_pariedWith = toPlug;
-//            toPlug.m_pariedWith = fromPlug;
-//            fromPlug.m_isZoneSource = true;
-//            GameObject gameObject = fromPlug.gameObject;
-//            gameObject.name += "FORCE PAIR";
-//            var forceConnect = fromPlug.gameObject.AddComponent<ForceConnect>();
-//            forceConnect.Cfg = cfg;
-
-//            // TODO: IDinLayer: LAYER内构建顺序
-//            //if (expandFrom.m_linksFrom.m_zone.IDinLayer > expandTo.m_linksFrom.m_zone.IDinLayer)
-//            //{
-//            //    forceConnect.ShouldFlipDoor = true;
-//            //}
+//            OpenFCDoor = 900,
+//            UnlockFCDoor = 901,
 //        }
 
-//        private void Connect2AreasInZone(ForceConnectCfg cfg, LG_Zone zone)
+//        // TODO: door indexing
+
+//        private static void OpenFCDoor(WardenObjectiveEventData e)
 //        {
-//            var from = cfg.From;
-//            var to = cfg.To;
+//            if (!SNet.IsMaster) return;
 
-//            var fromArea = zone.m_areas[from.AreaIndex];
-//            var toArea = zone.m_areas[to.AreaIndex];
+//            var areaIndex = e.Count;
+//            var doorIndex = e.FogSetting;
+//            bool openAll = e.Enabled;
 
-//            List<(LG_ZoneExpander expandFrom, LG_ZoneExpander expandTo)> lst = new();
-//            foreach (LG_ZoneExpander fromExp in fromArea.m_zoneExpanders)
+//            if (!Builder.Current.m_currentFloor.TryGetZoneByLocalIndex(e.DimensionIndex, e.Layer, e.LocalIndex, out var zone)
+//                || areaIndex < 0 || areaIndex >= zone.m_areas.Count
+//                )
 //            {
-//                foreach (LG_ZoneExpander toExp in toArea.m_zoneExpanders)
-//                {
-//                    if (Vector3.Distance(fromExp.transform.position, toExp.transform.position) <= 0.1f)
-//                    {
-//                        lst.Add((fromExp, toExp));
-//                    }
-//                }
-//            }
-
-//            if (lst.Count < 1)
-//            {
-//                EOSLogger.Error($"Connect2AreasInZone: cannot find gate! "
-//                    + $"From:({(cfg.DimensionIndex, from.Layer, from.LocalIndex, (char)('A' + from.AreaIndex))})"
-//                    + $"To:({(cfg.DimensionIndex, to.Layer, to.LocalIndex, (char)('A' + to.AreaIndex))})");
+//                EOSLogger.Error($"OpenFCDoor: invalid area indexer {(e.DimensionIndex, e.Layer, e.LocalIndex, ((char)'A' + areaIndex))}");
 //                return;
 //            }
 
-//            EOSLogger.Warning($"Connect2AreasInZone: found {lst.Count} gates"
-//                    + $"From:({(cfg.DimensionIndex, from.Layer, from.LocalIndex, (char)('A' + from.AreaIndex))})"
-//                    + $"To:({(cfg.DimensionIndex, to.Layer, to.LocalIndex, (char)('A' + to.AreaIndex))})");
-
-//            foreach (var pair in lst)
+//            var area = zone.m_areas[areaIndex];
+//            List<LG_SecurityDoor> fcDoors = new();
+//            foreach (var exp in area.m_zoneExpanders)
 //            {
-//                var exp = pair.expandFrom;
+//                if (exp.GetGate().SpawnedDoor == null) continue;
+//                var maybeFCDoor = exp.GetGate().SpawnedDoor.TryCast<LG_SecurityDoor>();
+//                if (maybeFCDoor == null) continue;
 
-//                var gate = exp.GetGate();
-//                switch (cfg.Setting.SecurityGateToEnter)
-//                {
-//                    case GateType.Security:
-//                        gate.ForceSecurityGate = true; break;
+//                var fc = maybeFCDoor.GetFC();
+//                if (fc == null) continue;
 
-//                    case GateType.Apex:
-//                        gate.ForceApexGate = true; break;
-
-//                    case GateType.Bulkhead:
-//                        gate.ForceSecurityGate = true;
-//                        gate.ForceBulkheadGate = true; break;
-//                }
-
-//                var forceConnect = gate.gameObject.AddComponent<ForceConnect>();
-//                forceConnect.Cfg = cfg;
-//            }
-//        }
-
-//        public void BuildCfg(ForceConnectCfg cfg)
-//        {
-//            eDimensionIndex dim = cfg.DimensionIndex;
-
-//            var from = cfg.From;
-//            var to = cfg.To;
-
-//            if (!(Builder.CurrentFloor.TryGetZoneByLocalIndex(dim, from.Layer, from.LocalIndex, out var fromZone)
-//                && 0 <= from.AreaIndex && from.AreaIndex < fromZone.m_areas.Count
-
-//                &&
-
-//                Builder.CurrentFloor.TryGetZoneByLocalIndex(dim, to.Layer, to.LocalIndex, out var toZone)
-//                && 0 <= to.AreaIndex && to.AreaIndex < toZone.m_areas.Count))
-//            {
-//                EOSLogger.Error($"CircularZones Build: Cannot find Zone 'From' or 'To'!\n"
-//    + $"From:({(cfg.DimensionIndex, from.Layer, from.LocalIndex, (char)('A' + from.AreaIndex))})"
-//    + $"To:({(cfg.DimensionIndex, to.Layer, to.LocalIndex, (char)('A' + to.AreaIndex))})");
-//                return;
+//                fcDoors.Add(maybeFCDoor);
 //            }
 
-//            if (fromZone.Pointer != toZone.Pointer)
+//            if (openAll)
 //            {
-//                Connect2Zones(cfg, fromZone, toZone);
+//                EOSLogger.Log($"OpenFCDoor: Opening all FC door in {(e.DimensionIndex, e.Layer, e.LocalIndex, ((char)'A' + areaIndex))}");
+//                fcDoors.ForEach(d => d.ForceOpenSecurityDoor());
 //            }
 //            else
 //            {
-//                Connect2AreasInZone(cfg, fromZone);
+//                if (doorIndex >= fcDoors.Count)
+//                {
+//                    EOSLogger.Log($"OpenFCDoor: Invalid FC door index ({doorIndex}) for this area, the valid range is [0, {fcDoors.Count})\n{(e.DimensionIndex, e.Layer, e.LocalIndex, ((char)'A' + areaIndex))}");
+//                    return;
+//                }
+
+//                var fcDoor = fcDoors[(int)doorIndex];
+//                EOSLogger.Log($"OpenFCDoor: Opening (index {doorIndex}) in {(e.DimensionIndex, e.Layer, e.LocalIndex, ((char)'A' + areaIndex))}");
+//                fcDoor.ForceOpenSecurityDoor();
 //            }
 //        }
 
-//        private void Build()
+//        private static void UnlockFCDoor(WardenObjectiveEventData e)
 //        {
-//            if (definitions.TryGetValue(CurrentMainLevelLayout, out var defs))
+//            if (!SNet.IsMaster) return;
+
+//            var areaIndex = e.Count;
+//            var doorIndex = e.FogSetting;
+//            bool unlockAll = e.Enabled;
+
+//            if (!Builder.Current.m_currentFloor.TryGetZoneByLocalIndex(e.DimensionIndex, e.Layer, e.LocalIndex, out var zone)
+//                || areaIndex < 0 || areaIndex >= zone.m_areas.Count
+//                )
 //            {
-//                defs.Definitions.ForEach(BuildCfg);
+//                EOSLogger.Error($"UnlockFCDoor: invalid area indexer {(e.DimensionIndex, e.Layer, e.LocalIndex, ((char)'A' + areaIndex))}");
+//                return;
+//            }
+
+//            var area = zone.m_areas[areaIndex];
+//            List<LG_SecurityDoor> fcDoors = new();
+//            foreach (var exp in area.m_zoneExpanders)
+//            {
+//                if (exp.GetGate().SpawnedDoor == null) continue;
+//                var maybeFCDoor = exp.GetGate().SpawnedDoor.TryCast<LG_SecurityDoor>();
+//                if (maybeFCDoor == null) continue;
+
+//                var fc = maybeFCDoor.GetFC();
+//                if (fc == null) continue;
+
+//                fcDoors.Add(maybeFCDoor);
+//            }
+
+//            if (unlockAll)
+//            {
+//                EOSLogger.Log($"UnlockFCDoor: Unlocking all FC doors in {(e.DimensionIndex, e.Layer, e.LocalIndex, ((char)'A' + areaIndex))}");
+//                fcDoors.ForEach(d => d.UseChainedPuzzleOrUnlock(SNet.Master));
+//            }
+//            else
+//            {
+//                if (doorIndex >= fcDoors.Count)
+//                {
+//                    EOSLogger.Log($"UnlockFCDoor: Invalid FC door index ({doorIndex}) for this area, the valid range is [0, {fcDoors.Count})\n{(e.DimensionIndex, e.Layer, e.LocalIndex, ((char)'A' + areaIndex))}");
+//                    return;
+//                }
+
+//                var fcDoor = fcDoors[(int)doorIndex];
+//                EOSLogger.Log($"UnlockFCDoor: unlocking (index {doorIndex}) in {(e.DimensionIndex, e.Layer, e.LocalIndex, ((char)'A' + areaIndex))}");
+//                fcDoor.UseChainedPuzzleOrUnlock(SNet.Master);
 //            }
 //        }
 //    }

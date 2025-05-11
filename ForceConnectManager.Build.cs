@@ -12,126 +12,6 @@ namespace EOSExt.ExtraDoor
 {
     public partial class ForceConnectManager
     {
-        private void Connect2Zones(ForceConnectCfg cfg, LG_Zone fromZone, LG_Zone toZone)
-        {
-            var from = cfg.From;
-            var to = cfg.To;
-
-            var fromArea = fromZone.m_areas[from.AreaIndex];
-            var toArea = toZone.m_areas[to.AreaIndex];
-
-            List<(LG_ZoneExpander expandFrom, LG_ZoneExpander expandTo)> lst = new();
-            LG_ZoneExpander expandFrom = null, expandTo = null;
-            foreach (LG_ZoneExpander fromExp in fromArea.m_zoneExpanders)
-            {
-                foreach (LG_ZoneExpander toExp in toArea.m_zoneExpanders)
-                {
-                    if (Vector3.Distance(fromExp.transform.position, toExp.transform.position) <= 0.1f)
-                    {
-                        expandFrom = fromExp;
-                        expandTo = toExp;
-                    }
-                }
-            }
-
-            if (expandFrom == null || expandTo == null)
-            {
-                if (expandFrom == null)
-                {
-                    EOSLogger.Error($"CircularZones Build: Cannot find 'from' - ({(cfg.DimensionIndex, from.Layer, from.LocalIndex, (char)('A' + from.AreaIndex))})");
-                }
-                else
-                {
-                    EOSLogger.Error($"CircularZones Build: Cannot find 'to' - ({(cfg.DimensionIndex, to.Layer, to.LocalIndex, (char)('A' + to.AreaIndex))})");
-                }
-                return;
-            }
-
-            LG_Plug fromPlug = expandFrom.TryCast<LG_Plug>();
-            LG_Plug toPlug = expandTo.TryCast<LG_Plug>();
-            if (fromPlug == null || toPlug == null)
-            {
-                EOSLogger.Error($"CircularZones Build: Cannot find fromPlug or toPlug!\n"
-                    + $"From:({(cfg.DimensionIndex, from.Layer, from.LocalIndex, (char)('A' + from.AreaIndex))})"
-                    + $"To:({(cfg.DimensionIndex, to.Layer, to.LocalIndex, (char)('A' + to.AreaIndex))})");
-                return;
-            }
-
-            expandFrom.ExpanderStatus = LG_ZoneExpanderStatus.Connected;
-            expandTo.ExpanderStatus = LG_ZoneExpanderStatus.Connected;
-            expandFrom.m_linksTo = expandTo.m_linksFrom;
-            expandTo.m_linksTo = expandFrom.m_linksFrom;
-
-            fromPlug.m_pariedWith = toPlug;
-            toPlug.m_pariedWith = fromPlug;
-            fromPlug.m_isZoneSource = true;
-            GameObject gameObject = fromPlug.gameObject;
-            gameObject.name += "FORCE PAIR";
-            var forceConnect = fromPlug.gameObject.AddComponent<ForceConnect>();
-            forceConnect.Cfg = cfg;
-
-            // TODO: IDinLayer: LAYER内构建顺序
-            //if (expandFrom.m_linksFrom.m_zone.IDinLayer > expandTo.m_linksFrom.m_zone.IDinLayer)
-            //{
-            //    forceConnect.ShouldFlipDoor = true;
-            //}
-        }
-
-        private void Connect2AreasInZone(ForceConnectCfg cfg, LG_Zone zone)
-        {
-            var from = cfg.From;
-            var to = cfg.To;
-
-            var fromArea = zone.m_areas[from.AreaIndex];
-            var toArea = zone.m_areas[to.AreaIndex];
-
-            List<(LG_ZoneExpander expandFrom, LG_ZoneExpander expandTo)> lst = new();
-            foreach (LG_ZoneExpander fromExp in fromArea.m_zoneExpanders)
-            {
-                foreach (LG_ZoneExpander toExp in toArea.m_zoneExpanders)
-                {
-                    if (Vector3.Distance(fromExp.transform.position, toExp.transform.position) <= 0.1f)
-                    {
-                        lst.Add((fromExp, toExp));
-                    }
-                }
-            }
-
-            if (lst.Count < 1)
-            {
-                EOSLogger.Error($"Connect2AreasInZone: cannot find gate! "
-                    + $"From:({(cfg.DimensionIndex, from.Layer, from.LocalIndex, (char)('A' + from.AreaIndex))})"
-                    + $"To:({(cfg.DimensionIndex, to.Layer, to.LocalIndex, (char)('A' + to.AreaIndex))})");
-                return;
-            }
-
-            EOSLogger.Warning($"Connect2AreasInZone: found {lst.Count} gates"
-                    + $"From:({(cfg.DimensionIndex, from.Layer, from.LocalIndex, (char)('A' + from.AreaIndex))})"
-                    + $"To:({(cfg.DimensionIndex, to.Layer, to.LocalIndex, (char)('A' + to.AreaIndex))})");
-
-            foreach (var pair in lst)
-            {
-                var exp = pair.expandFrom;
-
-                var gate = exp.GetGate();
-                switch (cfg.Setting.SecurityGateToEnter)
-                {
-                    case GateType.Security:
-                        gate.ForceSecurityGate = true; break;
-
-                    case GateType.Apex:
-                        gate.ForceApexGate = true; break;
-
-                    case GateType.Bulkhead:
-                        gate.ForceSecurityGate = true;
-                        gate.ForceBulkheadGate = true; break;
-                }
-
-                var forceConnect = gate.gameObject.AddComponent<ForceConnect>();
-                forceConnect.Cfg = cfg;
-            }
-        }
-
         public void BuildCfg(ForceConnectCfg cfg)
         {
             eDimensionIndex dim = cfg.DimensionIndex;
@@ -156,44 +36,57 @@ namespace EOSExt.ExtraDoor
             var fromArea = fromZone.m_areas[from.AreaIndex];
             var toArea = toZone.m_areas[to.AreaIndex];
 
-            List<(LG_ZoneExpander expandFrom, LG_ZoneExpander expandTo)> lst = new();
-
-            // O(N^2), required for setting up plug, but not required for setting up gate
-            foreach (LG_ZoneExpander fromExp in fromArea.m_zoneExpanders)
-            {
-                foreach (LG_ZoneExpander toExp in toArea.m_zoneExpanders)
-                {
-                    Vector2 fromPos = new(fromExp.transform.position.x, fromExp.transform.position.z);
-                    Vector2 toPos =   new(toExp.transform.position.x,     toExp.transform.position.z);
-                    if (Vector2.Distance(fromPos, toPos) <= 0.1f)
-                    //if (Vector3.Distance(fromExp.transform.position, toExp.transform.position) <= 0.1f)
-                    {
-                        lst.Add((fromExp, toExp));
-                        // We can actually find some same plug tho
-                        //if (fromExp.Pointer == toExp.Pointer)
-                        //{
-                        //    EOSLogger.Warning("Same plug!");
-                        //}
-                    }
-                }
-            }
+            List<(LG_ZoneExpander expandFrom, LG_ZoneExpander expandTo)> lst = ForceConnectDoorUtils.GetExpandersBetween(fromArea, toArea);
 
             if(lst.Count < 1)
             {
                 EOSLogger.Error($"ExtraDoor: cannot find gate / plug! "
                     + $"From:({(cfg.DimensionIndex, from.Layer, from.LocalIndex, (char)('A' + from.AreaIndex))})"
-                    + $"To:({(cfg.DimensionIndex, to.Layer, to.LocalIndex, (char)('A' + to.AreaIndex))})");
+                    + $"To:({(cfg.DimensionIndex, to.Layer, to.LocalIndex, (char)('A' + to.AreaIndex))})"
+                    );
                 return;
             }
 
-            foreach(var t in lst)
-            {
-                var expandFrom = t.expandFrom;
-                var expandTo = t.expandTo;
 
+            //if (cfg.FromDoorIndex < 0)
+            //{
+            //    EOSLogger.Warning($"ExtraDoor: FromDoorIndex < 1 ({cfg.FromDoorIndex}), will setup all doors inbetween"
+            //        + $"From:({(cfg.DimensionIndex, from.Layer, from.LocalIndex, (char)('A' + from.AreaIndex))})"
+            //        + $"To:({(cfg.DimensionIndex, to.Layer, to.LocalIndex, (char)('A' + to.AreaIndex))})"
+            //    );
+
+            //    lst.ForEach(t => Setup(t.expandFrom, t.expandTo));
+            //}
+            //else
+            //{
+            //    if (cfg.FromDoorIndex >= lst.Count)
+            //    {
+            //        EOSLogger.Error($"ExtraDoor: FromDoorIndex ({cfg.FromDoorIndex}) is out of range [0, {lst.Count})"
+            //            + $"From:({(cfg.DimensionIndex, from.Layer, from.LocalIndex, (char)('A' + from.AreaIndex))})"
+            //            + $"To:({(cfg.DimensionIndex, to.Layer, to.LocalIndex, (char)('A' + to.AreaIndex))})"
+            //        );
+            //        return;
+            //    }
+
+            //    Setup(lst[cfg.FromDoorIndex].expandFrom, lst[cfg.FromDoorIndex].expandTo);
+            //}
+
+            if (cfg.FromDoorIndex < 0 || cfg.FromDoorIndex >= lst.Count)
+            {
+                EOSLogger.Error($"ExtraDoor: FromDoorIndex ({cfg.FromDoorIndex}) is out of range [0, {lst.Count})"
+                    + $"From:({(cfg.DimensionIndex, from.Layer, from.LocalIndex, (char)('A' + from.AreaIndex))})"
+                    + $"To:({(cfg.DimensionIndex, to.Layer, to.LocalIndex, (char)('A' + to.AreaIndex))})"
+                );
+                return;
+            }
+
+            Setup(lst[cfg.FromDoorIndex].expandFrom, lst[cfg.FromDoorIndex].expandTo);
+
+            void Setup(LG_ZoneExpander expandFrom, LG_ZoneExpander expandTo)
+            {
                 LG_Plug fromPlug = expandFrom.TryCast<LG_Plug>();
                 LG_Plug toPlug = expandTo.TryCast<LG_Plug>();
-                
+
                 // connect by blocked plug
                 if (fromPlug != null && toPlug != null)
                 {
@@ -206,7 +99,7 @@ namespace EOSExt.ExtraDoor
 
                     // the 2 lines are required for plug, dont remove!
                     // however, for gate, we dont need to do this
-                    expandFrom.m_linksTo = expandTo.m_linksFrom; 
+                    expandFrom.m_linksTo = expandTo.m_linksFrom;
                     expandTo.m_linksTo = expandFrom.m_linksFrom;
 
                     fromPlug.gameObject.name += "FORCE PAIR";
@@ -230,7 +123,7 @@ namespace EOSExt.ExtraDoor
                             gate.ForceBulkheadGate = true; break;
                     }
 
-                    if(fromArea.m_zone.Pointer != toArea.m_zone.Pointer)
+                    if (fromArea.m_zone.Pointer != toArea.m_zone.Pointer)
                     {
                         expandFrom.m_isZoneSource = true;
 

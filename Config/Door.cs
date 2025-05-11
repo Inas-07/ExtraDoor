@@ -15,7 +15,5 @@ namespace EOSExt.ExtraDoor.Config
         public eLocalZoneIndex LocalIndex { get; set; }
 
         public int AreaIndex { get; set; } = 0;
-    
-        public int DoorIndex { get; set; } = 0;
     }
 }

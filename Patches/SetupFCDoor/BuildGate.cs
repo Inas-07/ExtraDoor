@@ -1,22 +1,15 @@
 ﻿using EOSExt.ExtraDoor.Config;
 using Expedition;
 using ExtraObjectiveSetup.Utils;
-using GameData;
-using GTFO.API.Extensions;
 using HarmonyLib;
 using LevelGeneration;
-using LogUtils;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using CullingSystem;
+
 namespace EOSExt.ExtraDoor.Patches.SetupFCDoor
 {
     [HarmonyPatch]
-    internal static class Gate
+    internal static class BuildGate
     {
         [HarmonyPrefix]
         [HarmonyWrapSafe]
@@ -206,14 +199,14 @@ namespace EOSExt.ExtraDoor.Patches.SetupFCDoor
             var core = __instance.SetupDoor(doorGO);
             if (__instance.m_gate.ForceSecurityGate || __instance.m_gate.ForceApexGate || __instance.m_gate.m_isZoneSource)
             {
-                LG_SecurityDoor lg_SecurityDoor = core.Cast<LG_SecurityDoor>();
-                //if (core.IsCheckpointDoor)
-                //{
-                //    LG_Factory.InjectJob(new LG_SecurityDoor.LG_CheckpointScannerJob(lg_SecurityDoor), LG_Factory.BatchName.DoorLocks);
-                //}
+                LG_SecurityDoor door = core.Cast<LG_SecurityDoor>();
+                if (fc.Cfg.Setting.IsCheckpointDoor)
+                {
+                    LG_Factory.InjectJob(new LG_SecurityDoor.LG_CheckpointScannerJob(door), LG_Factory.BatchName.DoorLocks);
+                }
                 if (fc.Cfg.Setting.ActiveEnemyWave.HasActiveEnemyWave)
                 {
-                    lg_SecurityDoor.SetupActiveEnemyWaveData(fc.Cfg.Setting.ActiveEnemyWave);
+                    door.SetupActiveEnemyWaveData(fc.Cfg.Setting.ActiveEnemyWave);
                 }
             }
 

@@ -34,26 +34,10 @@ namespace EOSExt.ExtraDoor.Patches
             if (fromArea.Pointer == linksFrom.Pointer)  // why
             {
                 door.FlippedForProgresion = true;
-
-                // do flip
-                //door.Gate.m_hasBeenFlipped = !door.Gate.m_hasBeenFlipped;
                 door.transform.rotation = Quaternion.LookRotation(door.transform.forward * -1f, door.transform.up);
             }
 
             return false;
         }
-
-        //[HarmonyPostfix]
-        //[HarmonyPatch(typeof(LG_BuildSecurityDoorLockJob), nameof(LG_BuildSecurityDoorLockJob.CheckFlip))]
-        //private static void Post_(LG_BuildSecurityDoorLockJob __instance)
-        //{
-        //    var fc = __instance.m_door.GetFC();
-        //    if (fc?.ShouldFlipDoor ?? false)
-        //    {
-        //        LG_SecurityDoor door = __instance.m_door;
-        //        door.FlippedForProgresion = !door.FlippedForProgresion;
-        //        door.transform.rotation = Quaternion.LookRotation(door.transform.forward * -1f, door.transform.up);
-        //    }
-        //}
     }
 }

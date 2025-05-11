@@ -40,14 +40,14 @@
     <Compile Include="ForceConnectManager.Build.cs" />
     <Compile Include="ForceConnectManager.Build.ProgressionPuzzle.cs" />
     <Compile Include="ForceConnectManager.cs" />
+    <Compile Include="ForceConnectManager.WardenEvents.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Patches\CheckDoorFlip.cs" />
-    <Compile Include="Patches\SetupForceGateDoor.cs" />
     <Compile Include="Patches\DisableAlarmShutdownOnTerminal\BuildJob_AlarmShutdownOnTerminalJob.cs" />
     <Compile Include="Patches\DisableAlarmShutdownOnTerminal\DoorLock_OnDoorState.cs" />
     <Compile Include="Patches\OnSecurityDoorSetup.cs" />
     <Compile Include="Patches\SetupFCDoor\ChainedPuzzles.cs" />
-    <Compile Include="Patches\SetupFCDoor\Gate.cs" />
+    <Compile Include="Patches\SetupFCDoor\BuildGate.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Dependencies.props" />

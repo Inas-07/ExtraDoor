@@ -18,8 +18,8 @@ namespace EOSExt.ExtraDoor
         {
             foreach (var kv in m_doorLookup)
             {
-                var door = new LG_SecurityDoor(kv.Key);
-                var fc = kv.Value;
+                var door = kv.Value;
+                var fc = door.GetFC();
                 var from = fc.Cfg.From;
                 var to = fc.Cfg.To;
 

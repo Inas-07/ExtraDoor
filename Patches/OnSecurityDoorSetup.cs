@@ -24,7 +24,8 @@ namespace EOSExt.ExtraDoor.Patches
                 var from = cfg.From;
                 var to = cfg.To;
 
-                EOSLogger.Debug($"ForceConnect: {cfg.DimensionIndex}, ({from.Layer}, {from.LocalIndex}, {(char)('A' + from.AreaIndex)}) <-> ({to.Layer}, {to.LocalIndex}, {(char)('A' + to.AreaIndex)})");
+                EOSLogger.Debug($"ForceConnect: {cfg.DimensionIndex}, ({from.Layer}, {from.LocalIndex}, {(char)('A' + from.AreaIndex)}) <-> ({to.Layer}, {to.LocalIndex}, {(char)('A' + to.AreaIndex)})\n" +
+                    $"WorldEventObjectFilter: '{cfg.WorldEventObjectFilter}', FromDoorIndex: {cfg.FromDoorIndex}");
                 
                 ForceConnectManager.Current.RegisterFCDoor(__instance);
                 fc.LinkedSecDoor = __instance;
