@@ -8,12 +8,14 @@ using System.Threading.Tasks;
 
 namespace EOSExt.ExtraDoor.Config
 {
-    public class AreaDoor
+    public class Door
     {
         public LG_LayerType Layer { get; set; }
 
         public eLocalZoneIndex LocalIndex { get; set; }
 
-        public int AreaIndex { get; set; } = -1;
+        public int AreaIndex { get; set; } = 0;
+    
+        public int DoorIndex { get; set; } = 0;
     }
 }
