@@ -31,13 +31,12 @@ namespace EOSExt.ExtraDoor.Patches
             var fromArea = fromZone.m_areas[from.AreaIndex];
             var linksFrom = door.Gate.m_linksFrom;
 
-            if (fromArea.Pointer != linksFrom.Pointer 
-                && !door.Gate.m_hasBeenFlipped) // flipped because of plug and all that
+            if (fromArea.Pointer == linksFrom.Pointer)  // why
             {
                 door.FlippedForProgresion = true;
 
                 // do flip
-                door.Gate.m_hasBeenFlipped = !door.Gate.m_hasBeenFlipped;
+                //door.Gate.m_hasBeenFlipped = !door.Gate.m_hasBeenFlipped;
                 door.transform.rotation = Quaternion.LookRotation(door.transform.forward * -1f, door.transform.up);
             }
 

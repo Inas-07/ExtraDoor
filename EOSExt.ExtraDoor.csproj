@@ -32,6 +32,7 @@
     <Compile Include="Config\DoorSetting.cs" />
     <Compile Include="Config\FCProgressionPuzzleToEnter.cs" />
     <Compile Include="Config\GateType.cs" />
+    <Compile Include="d.cs" />
     <Compile Include="EntryPoint.cs" />
     <Compile Include="ForceConnectDoorUtils.cs" />
     <Compile Include="ForceConnect.cs" />

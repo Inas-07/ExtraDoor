@@ -47,7 +47,6 @@ namespace EOSExt.ExtraDoor
                 return;
             }
 
-
             LG_Plug fromPlug = expandFrom.TryCast<LG_Plug>();
             LG_Plug toPlug = expandTo.TryCast<LG_Plug>();
             if (fromPlug == null || toPlug == null)
@@ -130,7 +129,6 @@ namespace EOSExt.ExtraDoor
 
                 var forceConnect = gate.gameObject.AddComponent<ForceConnect>();
                 forceConnect.Cfg = cfg;
-                
             }
         }
 
@@ -155,13 +153,94 @@ namespace EOSExt.ExtraDoor
                 return;
             }
 
-            if (fromZone.Pointer != toZone.Pointer)
+            var fromArea = fromZone.m_areas[from.AreaIndex];
+            var toArea = toZone.m_areas[to.AreaIndex];
+
+            List<(LG_ZoneExpander expandFrom, LG_ZoneExpander expandTo)> lst = new();
+
+            // O(N^2), required for setting up plug, but not required for setting up gate
+            foreach (LG_ZoneExpander fromExp in fromArea.m_zoneExpanders)
             {
-                Connect2Zones(cfg, fromZone, toZone);
+                foreach (LG_ZoneExpander toExp in toArea.m_zoneExpanders)
+                {
+                    Vector2 fromPos = new(fromExp.transform.position.x, fromExp.transform.position.z);
+                    Vector2 toPos =   new(toExp.transform.position.x,     toExp.transform.position.z);
+                    if (Vector2.Distance(fromPos, toPos) <= 0.1f)
+                    //if (Vector3.Distance(fromExp.transform.position, toExp.transform.position) <= 0.1f)
+                    {
+                        lst.Add((fromExp, toExp));
+                        // We can actually find some same plug tho
+                        //if (fromExp.Pointer == toExp.Pointer)
+                        //{
+                        //    EOSLogger.Warning("Same plug!");
+                        //}
+                    }
+                }
             }
-            else
+
+            if(lst.Count < 1)
             {
-                Connect2AreasInZone(cfg, fromZone);
+                EOSLogger.Error($"ExtraDoor: cannot find gate / plug! "
+                    + $"From:({(cfg.DimensionIndex, from.Layer, from.LocalIndex, (char)('A' + from.AreaIndex))})"
+                    + $"To:({(cfg.DimensionIndex, to.Layer, to.LocalIndex, (char)('A' + to.AreaIndex))})");
+                return;
+            }
+
+            foreach(var t in lst)
+            {
+                var expandFrom = t.expandFrom;
+                var expandTo = t.expandTo;
+
+                LG_Plug fromPlug = expandFrom.TryCast<LG_Plug>();
+                LG_Plug toPlug = expandTo.TryCast<LG_Plug>();
+                
+                // connect by blocked plug
+                if (fromPlug != null && toPlug != null)
+                {
+                    fromPlug.m_pariedWith = toPlug;
+                    toPlug.m_pariedWith = fromPlug;
+
+                    fromPlug.m_isZoneSource = true;
+                    expandFrom.ExpanderStatus = LG_ZoneExpanderStatus.Connected;
+                    expandTo.ExpanderStatus = LG_ZoneExpanderStatus.Connected;
+
+                    // the 2 lines are required for plug, dont remove!
+                    // however, for gate, we dont need to do this
+                    expandFrom.m_linksTo = expandTo.m_linksFrom; 
+                    expandTo.m_linksTo = expandFrom.m_linksFrom;
+
+                    fromPlug.gameObject.name += "FORCE PAIR";
+                    fromPlug.gameObject.AddComponent<ForceConnect>().Cfg = cfg;
+                }
+
+                // connect by existing gate
+                else
+                {
+                    var gate = expandFrom.GetGate();
+                    switch (cfg.Setting.SecurityGateToEnter)
+                    {
+                        case GateType.Security:
+                            gate.ForceSecurityGate = true; break;
+
+                        case GateType.Apex:
+                            gate.ForceApexGate = true; break;
+
+                        case GateType.Bulkhead:
+                            gate.ForceSecurityGate = true;
+                            gate.ForceBulkheadGate = true; break;
+                    }
+
+                    if(fromArea.m_zone.Pointer != toArea.m_zone.Pointer)
+                    {
+                        expandFrom.m_isZoneSource = true;
+
+                        expandFrom.ExpanderStatus = LG_ZoneExpanderStatus.Connected;
+                        expandTo.ExpanderStatus = LG_ZoneExpanderStatus.Connected;
+                    }
+
+                    gate.gameObject.name += "FORCE PAIR";
+                    gate.gameObject.AddComponent<ForceConnect>().Cfg = cfg;
+                }
             }
         }
 

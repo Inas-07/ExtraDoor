@@ -31,10 +31,6 @@ namespace EOSExt.ExtraDoor.Patches.SetupFCDoor
             else
             {
                 fc = __instance.m_gate.gameObject.GetComponent<ForceConnect>();
-                if (fc != null)
-                {
-                    EOSLogger.Warning("Found fc from gate!");
-                }
             }
 
             if (fc == null) return true;
