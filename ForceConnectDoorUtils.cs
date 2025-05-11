@@ -18,7 +18,7 @@ using GTFO.API.Extensions;
 
 namespace EOSExt.ExtraDoor
 {
-    internal static class FCDoorUtils
+    internal static class ForceConnectDoorUtils
     {
         public static ForceConnect? GetFC(this LG_SecurityDoor fcdoor) => fcdoor.gameObject.GetComponentInParent<ForceConnect>(); // get door from plug
 
@@ -150,8 +150,11 @@ namespace EOSExt.ExtraDoor
                                 var cfg = fc.Cfg;
                                 //AIG_CourseNode courseNode = fcdoor.Gate.GetOppositeArea(fcdoor.Gate.ProgressionSourceArea).m_courseNode;
                                 Builder.CurrentFloor.TryGetZoneByLocalIndex(cfg.DimensionIndex, cfg.To.Layer, cfg.To.LocalIndex, out var enemyZone);
-                                var courseNode = enemyZone.m_areas[cfg.To.AreaIndex].m_courseNode;
-                                Vector3 position = fcdoor.transform.position + fcdoor.Gate.CoursePortal.DirectionTowardsNode(courseNode) * 1.5f + Vector3.up * 0.3f;
+                                var toNode = enemyZone.m_areas[cfg.To.AreaIndex].m_courseNode;
+
+                                // TODO: DirectionTowardsNode
+                                //Vector3 position = fcdoor.transform.position + fcdoor.Gate.CoursePortal.DirectionTowardsNode(toNode) * 1.5f + Vector3.up * 0.3f;
+                                Vector3 position = fcdoor.transform.position +  fcdoor.transform.forward * -1.5f + Vector3.up * 0.3f;
                                 Vector3 gateCrossingVec = fcdoor.Gate.GetGateCrossingVec();
 
                                 if (aew.EnemyGroupInfrontOfDoor != 0U)
@@ -163,7 +166,7 @@ namespace EOSExt.ExtraDoor
                                     }
                                     else
                                     {
-                                        Mastermind.Current.SpawnGroup(position, courseNode, EnemyGroupType.Hunters, eEnemyGroupSpawnType.OnLine, block, -1f, gateCrossingVec, null);
+                                        Mastermind.Current.SpawnGroup(position, toNode, EnemyGroupType.Hunters, eEnemyGroupSpawnType.OnLine, block, -1f, gateCrossingVec, null);
                                     }
                                 }
                                 if (aew.EnemyGroupInArea != 0U)
@@ -177,7 +180,7 @@ namespace EOSExt.ExtraDoor
                                     {
                                         for (int i = 0; i < aew.EnemyGroupsInArea; i++)
                                         {
-                                            Mastermind.Current.SpawnGroup(position, courseNode, EnemyGroupType.Hunters, eEnemyGroupSpawnType.RandomInArea, block2, -1f, default(Vector3), null);
+                                            Mastermind.Current.SpawnGroup(position, toNode, EnemyGroupType.Hunters, eEnemyGroupSpawnType.RandomInArea, block2, -1f, default(Vector3), null);
                                         }
                                     }
                                 }

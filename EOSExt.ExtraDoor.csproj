@@ -28,19 +28,20 @@
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Config\AreaDoor.cs" />
+    <Compile Include="Config\Door.cs" />
     <Compile Include="Config\DoorSetting.cs" />
     <Compile Include="Config\FCProgressionPuzzleToEnter.cs" />
     <Compile Include="Config\GateType.cs" />
     <Compile Include="EntryPoint.cs" />
-    <Compile Include="FCDoorUtils.cs" />
+    <Compile Include="ForceConnectDoorUtils.cs" />
     <Compile Include="ForceConnect.cs" />
     <Compile Include="Config\ForceConnectCfg.cs" />
-    <Compile Include="ForceConnectManager.BuildCfg.cs" />
-    <Compile Include="ForceConnectManager.BuildProgressionPuzzle.cs" />
+    <Compile Include="ForceConnectManager.Build.cs" />
+    <Compile Include="ForceConnectManager.Build.ProgressionPuzzle.cs" />
     <Compile Include="ForceConnectManager.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Patches\CheckDoorFlip.cs" />
+    <Compile Include="Patches\SetupForceGateDoor.cs" />
     <Compile Include="Patches\DisableAlarmShutdownOnTerminal\BuildJob_AlarmShutdownOnTerminalJob.cs" />
     <Compile Include="Patches\DisableAlarmShutdownOnTerminal\DoorLock_OnDoorState.cs" />
     <Compile Include="Patches\OnSecurityDoorSetup.cs" />

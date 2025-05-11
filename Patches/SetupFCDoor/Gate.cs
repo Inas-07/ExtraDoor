@@ -23,8 +23,20 @@ namespace EOSExt.ExtraDoor.Patches.SetupFCDoor
         [HarmonyPatch(typeof(LG_BuildGateJob), nameof(LG_BuildGateJob.Build))]
         private static bool Pre_(LG_BuildGateJob __instance, ref bool __result)
         {
-            if (__instance.m_plug == null) return true;
-            var fc = __instance.m_plug.gameObject.GetComponent<ForceConnect>();
+            ForceConnect fc = null;
+            if (__instance.m_plug != null)
+            {
+                fc = __instance.m_plug.gameObject.GetComponent<ForceConnect>();
+            }
+            else
+            {
+                fc = __instance.m_gate.gameObject.GetComponent<ForceConnect>();
+                if (fc != null)
+                {
+                    EOSLogger.Warning("Found fc from gate!");
+                }
+            }
+
             if (fc == null) return true;
 
             try
@@ -133,6 +145,7 @@ namespace EOSExt.ExtraDoor.Patches.SetupFCDoor
                                 {
                                     gateGO = Builder.ComplexResourceSetBlock.GetWeakGate(__instance.m_gate.Type, __instance.m_rnd.Seed.SubSeed(__instance.m_rnd.Random.NextSubSeed()), SubComplex.All);
                                 }
+
                                 Vector3 position = __instance.m_gate.transform.position;
                                 Quaternion rotation;
                                 if (__instance.m_plugWasFlipped || __instance.m_gate.ExpanderRotation == LG_ZoneExpanderRotation.Gate_RelinkedAndFlipped)
@@ -145,6 +158,7 @@ namespace EOSExt.ExtraDoor.Patches.SetupFCDoor
                                     rotation = __instance.m_gate.transform.rotation;
                                     __instance.m_gate.m_hasBeenFlipped = false;
                                 }
+
                                 GameObject gameObject2 = UnityEngine.Object.Instantiate<GameObject>(gateGO, position, rotation, __instance.m_gate.transform);
                                 //__instance.m_gate.SpawnedDoor = __instance.SetupDoor(gameObject2);
                                 __instance.m_gate.SpawnedDoor = SetupDoor(__instance, gameObject2, fc);

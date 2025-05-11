@@ -19,10 +19,6 @@ namespace EOSExt.ExtraDoor
 
         private Dictionary<System.IntPtr, ForceConnect> m_doorLookup = new();
 
-        //internal void Register(LG_SecurityDoor door, ForceConnect fc) => m_doorLookup[door.Pointer] = fc;
-
-        //public bool TryGetForceConnectCfg(LG_SecurityDoor door, out ForceConnect cfg) => m_doorLookup.TryGetValue(door.Pointer, out cfg);
-
         public void RegisterFCDoor(LG_SecurityDoor fcdoor) => m_doorLookup[fcdoor.Pointer] = fcdoor.GetFC();
 
         private void Cleanup()

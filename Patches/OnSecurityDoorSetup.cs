@@ -34,7 +34,7 @@ namespace EOSExt.ExtraDoor.Patches
                 }
                 else
                 {
-                    var apexAnim = __instance.m_anim.TryCast<LG_SecurityDoor_Anim>();
+                    var apexAnim = __instance.m_anim.TryCast<LG_ApexDoor_Anim>();
                     if(apexAnim != null)
                     {
                         apexAnim.OnDoorOpenStarted = (Il2CppSystem.Action)__instance.FCOnDoorOpenStarted;

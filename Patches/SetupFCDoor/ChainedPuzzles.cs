@@ -55,19 +55,21 @@ namespace EOSExt.ExtraDoor.Patches.SetupDoor
         private static bool Pre_SetupCPLock(LG_SecurityDoor __instance, uint puzzleDataId)
         {
             var fc = __instance.GetFC(); 
-            if (fc == null || !fc.ShouldFlipDoor) return true; // process flipped door
+            //if (fc == null || !fc.ShouldFlipDoor) return true; // process flipped door
+            if (fc == null) return true; // process flipped door
 
             ChainedPuzzleDataBlock block = GameDataBlockBase<ChainedPuzzleDataBlock>.GetBlock(puzzleDataId);
             if (__instance.GetChainedPuzzleStartPosition(out var sourcePos))
             {
                 ChainedPuzzleInstance puzzleToOpen = ChainedPuzzleManager.CreatePuzzleInstance(block,
                     //__instance.Gate.ProgressionSourceArea,
-                    __instance.Gate.m_linksFrom,  // flipped 
+                    __instance.Gate.m_linksFrom,
 
                     __instance.Gate.m_linksTo,
 
                     sourcePos, 
-                    __instance.transform, false
+                    __instance.transform, 
+                    false
                 );
 
                 eDoorStatus status = __instance.m_locks.SetupForChainedPuzzle(puzzleToOpen);
