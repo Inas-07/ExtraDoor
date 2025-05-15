@@ -95,6 +95,7 @@ namespace EOSExt.ExtraDoor
                             gate.ForceApexGate = true; break;
 
                         case GateType.Bulkhead:
+                        case GateType.Bulkhead_Main:
                             gate.ForceSecurityGate = true;
                             gate.ForceBulkheadGate = true; break;
                     }

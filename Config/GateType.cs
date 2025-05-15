@@ -11,6 +11,7 @@ namespace EOSExt.ExtraDoor.Config
         Security,
         Apex,
         Bulkhead,
+        Bulkhead_Main
         //Blocked, // crashes LG
     }
 }

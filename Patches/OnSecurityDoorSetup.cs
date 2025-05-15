@@ -30,6 +30,8 @@ namespace EOSExt.ExtraDoor.Patches
                 ForceConnectManager.Current.RegisterFCDoor(__instance);
                 fc.LinkedSecDoor = __instance;
 
+                __instance.LinksToLayerType = to.Layer;
+
                 var sync = __instance.m_sync.Cast<LG_Door_Sync>();
                 sync.OnDoorStateChange = (Il2CppSystem.Action<pDoorState, bool>)__instance.FCOnSyncDoorStatusChange;
 

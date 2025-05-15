@@ -77,7 +77,20 @@ namespace EOSExt.ExtraDoor.Patches.SetupFCDoor
                                 __instance.m_gate.GetOppositeArea(progressionSourceArea);
                                 if (__instance.m_gate.ForceBulkheadGate)
                                 {
-                                    gateGO = Builder.ComplexResourceSetBlock.GetBulkheadGate(__instance.m_gate.Type, __instance.m_rnd.Seed.SubSeed(__instance.m_rnd.Random.NextSubSeed()), SubComplex.All);
+                                    if(fc.Cfg.Setting.SecurityGateToEnter == GateType.Bulkhead_Main)
+                                    {
+                                        uint seed = __instance.m_rnd.Seed.SubSeed(__instance.m_rnd.Random.NextSubSeed());
+                                        gateGO = Builder.ComplexResourceSetBlock.GetMainPathBulkheadGate(__instance.m_gate.Type, seed, SubComplex.All);
+                                        if (gateGO == null)
+                                        {
+                                            EOSLogger.Error("Could not get main path bulkhead door prefab: defaulting back to a normal bulkhead door! (You're Complex Resource Set probably don't have the main path bulkhead door references set).");
+                                            gateGO = Builder.ComplexResourceSetBlock.GetBulkheadGate(__instance.m_gate.Type, seed, SubComplex.All);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        gateGO = Builder.ComplexResourceSetBlock.GetBulkheadGate(__instance.m_gate.Type, __instance.m_rnd.Seed.SubSeed(__instance.m_rnd.Random.NextSubSeed()), SubComplex.All);
+                                    }
                                 }
                                 else if (__instance.m_gate.ForceApexGate)
                                 {
@@ -120,13 +133,28 @@ namespace EOSExt.ExtraDoor.Patches.SetupFCDoor
                                         }
                                         else
                                         {
-                                            uint seed = __instance.m_rnd.Seed.SubSeed(__instance.m_rnd.Random.NextSubSeed());
-                                            gateGO = Builder.ComplexResourceSetBlock.GetMainPathBulkheadGate(__instance.m_gate.Type, seed, SubComplex.All);
-                                            if (gateGO == null)
+                                            if (fc.Cfg.Setting.SecurityGateToEnter == GateType.Bulkhead_Main)
                                             {
-                                                EOSLogger.Error("Could not get main path bulkhead door prefab: defaulting back to a normal bulkhead door! (You're Complex Resource Set probably don't have the main path bulkhead door references set).");
-                                                gateGO = Builder.ComplexResourceSetBlock.GetBulkheadGate(__instance.m_gate.Type, seed, SubComplex.All);
+                                                uint seed = __instance.m_rnd.Seed.SubSeed(__instance.m_rnd.Random.NextSubSeed());
+                                                gateGO = Builder.ComplexResourceSetBlock.GetMainPathBulkheadGate(__instance.m_gate.Type, seed, SubComplex.All);
+                                                if (gateGO == null)
+                                                {
+                                                    EOSLogger.Error("Could not get main path bulkhead door prefab: defaulting back to a normal bulkhead door! (You're Complex Resource Set probably don't have the main path bulkhead door references set).");
+                                                    gateGO = Builder.ComplexResourceSetBlock.GetBulkheadGate(__instance.m_gate.Type, seed, SubComplex.All);
+                                                }
                                             }
+                                            else
+                                            {
+                                                gateGO = Builder.ComplexResourceSetBlock.GetBulkheadGate(__instance.m_gate.Type, __instance.m_rnd.Seed.SubSeed(__instance.m_rnd.Random.NextSubSeed()), SubComplex.All);
+                                            }
+
+                                            //uint seed = __instance.m_rnd.Seed.SubSeed(__instance.m_rnd.Random.NextSubSeed());
+                                            //gateGO = Builder.ComplexResourceSetBlock.GetMainPathBulkheadGate(__instance.m_gate.Type, seed, SubComplex.All);
+                                            //if (gateGO == null)
+                                            //{
+                                            //    EOSLogger.Error("Could not get main path bulkhead door prefab: defaulting back to a normal bulkhead door! (You're Complex Resource Set probably don't have the main path bulkhead door references set).");
+                                            //    gateGO = Builder.ComplexResourceSetBlock.GetBulkheadGate(__instance.m_gate.Type, seed, SubComplex.All);
+                                            //}
                                         }
                                     }
                                 }
