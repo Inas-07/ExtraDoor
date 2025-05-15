@@ -47,30 +47,6 @@ namespace EOSExt.ExtraDoor
                 return;
             }
 
-
-            //if (cfg.FromDoorIndex < 0)
-            //{
-            //    EOSLogger.Warning($"ExtraDoor: FromDoorIndex < 1 ({cfg.FromDoorIndex}), will setup all doors inbetween"
-            //        + $"From:({(cfg.DimensionIndex, from.Layer, from.LocalIndex, (char)('A' + from.AreaIndex))})"
-            //        + $"To:({(cfg.DimensionIndex, to.Layer, to.LocalIndex, (char)('A' + to.AreaIndex))})"
-            //    );
-
-            //    lst.ForEach(t => Setup(t.expandFrom, t.expandTo));
-            //}
-            //else
-            //{
-            //    if (cfg.FromDoorIndex >= lst.Count)
-            //    {
-            //        EOSLogger.Error($"ExtraDoor: FromDoorIndex ({cfg.FromDoorIndex}) is out of range [0, {lst.Count})"
-            //            + $"From:({(cfg.DimensionIndex, from.Layer, from.LocalIndex, (char)('A' + from.AreaIndex))})"
-            //            + $"To:({(cfg.DimensionIndex, to.Layer, to.LocalIndex, (char)('A' + to.AreaIndex))})"
-            //        );
-            //        return;
-            //    }
-
-            //    Setup(lst[cfg.FromDoorIndex].expandFrom, lst[cfg.FromDoorIndex].expandTo);
-            //}
-
             if (cfg.FromDoorIndex < 0 || cfg.FromDoorIndex >= lst.Count)
             {
                 EOSLogger.Error($"ExtraDoor: FromDoorIndex ({cfg.FromDoorIndex}) is out of range [0, {lst.Count})"

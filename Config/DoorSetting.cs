@@ -9,6 +9,8 @@ namespace EOSExt.ExtraDoor.Config
 {
     public class DoorSetting
     {
+        public GateType SecurityGateToEnter { get; set; }
+
         public List<LevelEventData> EventsOnEnter { get; set; } = new();
 
         public List<WardenObjectiveEventData> EventsOnApproachDoor { get; set; } = new();
@@ -28,8 +30,6 @@ namespace EOSExt.ExtraDoor.Config
         public bool IsCheckpointDoor { get; set; } = false;
 
         public bool PlayScannerVoiceAudio { get; set; } = true;
-
-        public GateType SecurityGateToEnter { get; set; }
 
         public ActiveEnemyWaveData ActiveEnemyWave { get; set; } = new();
     }

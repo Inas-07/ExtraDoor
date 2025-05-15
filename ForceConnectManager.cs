@@ -57,6 +57,8 @@ namespace EOSExt.ExtraDoor
 
             EOSWardenEventManager.Current.AddEventDefinition(FCDoorEventType.OpenFCDoor.ToString(), (uint)FCDoorEventType.OpenFCDoor, OpenFCDoor);
             EOSWardenEventManager.Current.AddEventDefinition(FCDoorEventType.UnlockFCDoor.ToString(), (uint)FCDoorEventType.UnlockFCDoor, UnlockFCDoor);
+            EOSWardenEventManager.Current.AddEventDefinition(FCDoorEventType.CloseFCDoor.ToString(), (uint)FCDoorEventType.CloseFCDoor, CloseFCDoor);
+            EOSWardenEventManager.Current.AddEventDefinition(FCDoorEventType.LockFCDoor.ToString(), (uint)FCDoorEventType.LockFCDoor, LockFCDoor);
 
             LevelAPI.OnEnterLevel += OnEnterLevel;
             LevelAPI.OnLevelCleanup += Cleanup;
