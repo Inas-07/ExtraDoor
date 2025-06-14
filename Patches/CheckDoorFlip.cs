@@ -1,4 +1,5 @@
 ﻿using EOSExt.ExtraDoor;
+using ExtraObjectiveSetup.Utils;
 using HarmonyLib;
 using LevelGeneration;
 using System;
@@ -22,8 +23,8 @@ namespace EOSExt.ExtraDoor.Patches
             if (fc == null) return true;
 
             var door = __instance.m_door;
-            var doorDir = door.transform.forward;
 
+            var doorDir = door.transform.forward;
             var cfg = fc.Cfg;
             var from = cfg.From;
 
@@ -31,8 +32,20 @@ namespace EOSExt.ExtraDoor.Patches
             var fromArea = fromZone.m_areas[from.AreaIndex];
             var linksFrom = door.Gate.m_linksFrom;
 
+            var to = cfg.To;
+
+            EOSLogger.Warning($"CheckFilp!\nOri: {linksFrom.name} -> {door.Gate.m_linksTo.name}\nShould be: {(cfg.DimensionIndex, from.Layer, from.LocalIndex, (char)('A' + from.AreaIndex))} -> {(cfg.DimensionIndex, to.Layer, to.LocalIndex, (char)('A' + to.AreaIndex))}");
+
+            if (door.FlippedForProgresion)
+            {
+                EOSLogger.Error("Door already flipped, skipped ....");
+                return false;
+            }
+
             if (fromArea.Pointer == linksFrom.Pointer)  // why
             {
+                EOSLogger.Error("Flipped!");
+
                 door.FlippedForProgresion = true;
                 door.transform.rotation = Quaternion.LookRotation(door.transform.forward * -1f, door.transform.up);
             }

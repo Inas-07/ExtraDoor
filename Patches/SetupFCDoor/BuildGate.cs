@@ -73,8 +73,6 @@ namespace EOSExt.ExtraDoor.Patches.SetupFCDoor
                             else
                             {
                                 GameObject gateGO = null;
-                                LG_Area progressionSourceArea = __instance.m_gate.ProgressionSourceArea;
-                                __instance.m_gate.GetOppositeArea(progressionSourceArea);
                                 if (__instance.m_gate.ForceBulkheadGate)
                                 {
                                     if(fc.Cfg.Setting.SecurityGateToEnter == GateType.Bulkhead_Main)
@@ -228,6 +226,23 @@ namespace EOSExt.ExtraDoor.Patches.SetupFCDoor
             if (__instance.m_gate.ForceSecurityGate || __instance.m_gate.ForceApexGate || __instance.m_gate.m_isZoneSource)
             {
                 LG_SecurityDoor door = core.Cast<LG_SecurityDoor>();
+
+                // the original chainedPuzzleToEnter
+                // wont build fc door door lock if it is 0 
+                uint oriCPToEnter = __instance.m_gate.m_linksTo.m_zone.m_settings.m_zoneData.ChainedPuzzleToEnter;
+                if (oriCPToEnter == 0) 
+                {
+                    var fcCP = fc.Cfg.Setting.ChainedPuzzleToEnter;
+                    if (fcCP > 0U)
+                    {
+                        LG_Factory.InjectJob(new LG_BuildChainedPuzzleDoorLockJob(door, fcCP), LG_Factory.BatchName.DoorLocks);
+                    }
+                    else
+                    {
+                        LG_Factory.InjectJob(new LG_SimpleDoorLockJob(door), LG_Factory.BatchName.DoorLocks);
+                    }
+                }
+
                 if (fc.Cfg.Setting.IsCheckpointDoor)
                 {
                     LG_Factory.InjectJob(new LG_SecurityDoor.LG_CheckpointScannerJob(door), LG_Factory.BatchName.DoorLocks);
